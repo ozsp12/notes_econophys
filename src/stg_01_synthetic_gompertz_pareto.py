@@ -1,27 +1,23 @@
 """Build synthetic PNAD income microdata from annual Gompertz--Pareto fits.
 
-The source metadata stores the parameters fitted to positive annual income in the
-trusted PNAD analysis. Income is reconstructed deterministically from midpoint
-survival quantiles. This produces a smooth synthetic sample with the same number
-of observations as the fitted annual sample and avoids Monte Carlo noise.
+The annual metadata contain parameters fitted to positive income in the trusted
+PNAD analysis. The reconstruction uses deterministic midpoint survival quantiles,
+so no Monte Carlo noise is introduced.
 
-For normalized income x, the fitted survival function is
+For normalized income x,
 
-    S_G(x) = exp(exp(A - B x))               (Gompertz body)
+    S_G(x) = exp(exp(A - B x))
 
-and, above the transition x_t,
+for the Gompertz body, and
 
-    S_P(x) = beta x**(-alpha)                (Pareto tail),
+    S_P(x) = beta x**(-alpha)
 
-where S is expressed in percent. Continuity at x_t implies
+for the Pareto tail, with S expressed in percent. Continuity at the transition
+x_t gives beta = S_G(x_t) * x_t**alpha.
 
-    beta = S_G(x_t) * x_t**alpha.
-
-The generated normalized incomes are mapped back to 2025 USD using the empirical
-annual normalization mean stored in the metadata.
-
-This is a synthetic reconstruction of the fitted distributions. It is not an
-inverse recovery of the original PNAD records.
+Generated normalized incomes are mapped to 2025 USD with the empirical annual
+normalization mean. The resulting data are synthetic fitted-distribution data,
+not recovered original PNAD microdata.
 """
 
 from __future__ import annotations
@@ -31,6 +27,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -47,6 +45,13 @@ REQUIRED_COLUMNS = {
     "pareto_alpha_mle",
 }
 
+PARQUET_SCHEMA = pa.schema(
+    [
+        pa.field("year", pa.int16(), nullable=False),
+        pa.field("income", pa.float64(), nullable=False),
+    ]
+)
+
 
 def load_metadata(path: Path = DEFAULT_METADATA) -> pd.DataFrame:
     """Load and validate annual Gompertz--Pareto reconstruction metadata."""
@@ -60,12 +65,11 @@ def load_metadata(path: Path = DEFAULT_METADATA) -> pd.DataFrame:
         duplicated = df.loc[df["year"].duplicated(), "year"].tolist()
         raise ValueError(f"Duplicated years in metadata: {duplicated}")
 
-    positive_columns = [
+    for column in (
         "normalization_mean_income_adj_2025_usd",
         "positive_income_observation_n",
         "gompertz_B",
-    ]
-    for column in positive_columns:
+    ):
         if (df[column] <= 0).any():
             raise ValueError(f"{column} must be strictly positive.")
 
@@ -73,36 +77,37 @@ def load_metadata(path: Path = DEFAULT_METADATA) -> pd.DataFrame:
 
 
 def interpolate_missing_tail_parameters(df: pd.DataFrame) -> pd.DataFrame:
-    """Linearly interpolate only missing tail parameters between observed PNAD years.
+    """Interpolate only missing tail parameters between observed survey years.
 
-    The source fit has no supported Pareto tail for 1985. The interpolation is
-    explicit and local; observed values are never modified. This function does
-    not create rows for years without a PNAD survey.
+    In the source fit, 1985 has no Pareto transition or tail exponent. The
+    interpolation is explicit and local; observed fitted values are not changed.
+    This function does not create rows for years in which PNAD was not fielded.
     """
     result = df.copy()
-    columns = ["transition_x_t", "pareto_alpha_mle"]
 
-    for column in columns:
-        original_missing = result[column].isna()
+    for column in ("transition_x_t", "pareto_alpha_mle"):
+        source_missing = result[column].isna()
         result[column] = result[column].interpolate(
             method="linear",
             limit_area="inside",
         )
-        result[f"{column}_interpolated"] = original_missing & result[column].notna()
+        result[f"{column}_interpolated"] = (
+            source_missing & result[column].notna()
+        )
 
-    unresolved = result[columns].isna().any(axis=1)
+    unresolved = result[["transition_x_t", "pareto_alpha_mle"]].isna().any(axis=1)
     if unresolved.any():
         years = result.loc[unresolved, "year"].tolist()
         raise ValueError(
-            "Tail parameters remain unavailable after interpolation for years "
-            f"{years}."
+            "Tail parameters remain unavailable after interpolation for "
+            f"years {years}."
         )
 
     return result
 
 
-def reconstruct_year(row: pd.Series) -> pd.DataFrame:
-    """Reconstruct one annual synthetic sample by inverse survival quantiles."""
+def reconstruct_year(row: pd.Series) -> tuple[np.ndarray, np.ndarray]:
+    """Return synthetic year and income arrays for one annual fitted model."""
     year = int(row["year"])
     n = int(row["positive_income_observation_n"])
     mean_income = float(row["normalization_mean_income_adj_2025_usd"])
@@ -116,12 +121,11 @@ def reconstruct_year(row: pd.Series) -> pd.DataFrame:
     if B <= 0 or x_t <= 0 or alpha <= 0:
         raise ValueError(f"{year}: invalid Gompertz--Pareto parameters.")
 
-    # Midpoint empirical survival probabilities, ordered from low to high income.
     rank = np.arange(1, n + 1, dtype=np.float64)
     survival_pct = 100.0 * (n - rank + 0.5) / n
 
-    transition_survival_pct = np.exp(np.exp(A - B * x_t))
-    if not (1.0 <= transition_survival_pct <= 100.0):
+    transition_survival_pct = float(np.exp(np.exp(A - B * x_t)))
+    if not 1.0 <= transition_survival_pct <= 100.0:
         raise ValueError(
             f"{year}: transition survival must lie in [1, 100] percent; "
             f"got {transition_survival_pct}."
@@ -131,24 +135,34 @@ def reconstruct_year(row: pd.Series) -> pd.DataFrame:
     body = survival_pct >= transition_survival_pct
     tail = ~body
 
-    # Invert S_G(x) = exp(exp(A - Bx)).
     normalized_income[body] = (
         A - np.log(np.log(survival_pct[body]))
     ) / B
 
-    # Enforce continuity and invert S_P(x) = beta x^(-alpha).
     beta = transition_survival_pct * x_t**alpha
-    normalized_income[tail] = (beta / survival_pct[tail]) ** (1.0 / alpha)
+    normalized_income[tail] = (
+        beta / survival_pct[tail]
+    ) ** (1.0 / alpha)
 
-    # Numerical roundoff near S=100 can produce values extremely close to zero.
     normalized_income = np.maximum(normalized_income, 0.0)
     income = normalized_income * mean_income
 
-    return pd.DataFrame(
-        {
-            "year": np.full(n, year, dtype=np.int16),
-            "income": income.astype(np.float64),
-        }
+    if not np.isfinite(income).all() or (income < 0).any():
+        raise ValueError(f"{year}: reconstruction produced invalid incomes.")
+
+    years = np.full(n, year, dtype=np.int16)
+    return years, income.astype(np.float64, copy=False)
+
+
+def annual_arrow_table(row: pd.Series) -> pa.Table:
+    """Convert one reconstructed survey year to the canonical Arrow schema."""
+    years, income = reconstruct_year(row)
+    return pa.Table.from_arrays(
+        [
+            pa.array(years, type=pa.int16()),
+            pa.array(income, type=pa.float64()),
+        ],
+        schema=PARQUET_SCHEMA,
     )
 
 
@@ -156,8 +170,8 @@ def build_synthetic_dataset(
     metadata_path: Path = DEFAULT_METADATA,
     output_path: Path = DEFAULT_OUTPUT,
     interpolate_missing_tail: bool = True,
-) -> pd.DataFrame:
-    """Build all available PNAD survey years and persist a two-column Parquet."""
+) -> tuple[int, int]:
+    """Write the complete synthetic dataset to Parquet one survey year at a time."""
     metadata = load_metadata(metadata_path)
 
     if interpolate_missing_tail:
@@ -172,23 +186,31 @@ def build_synthetic_dataset(
             f"years: {years}"
         )
 
-    frames = [reconstruct_year(row) for _, row in metadata.iterrows()]
-    synthetic = pd.concat(frames, ignore_index=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if output_path.exists():
+        output_path.unlink()
 
-    if list(synthetic.columns) != ["year", "income"]:
-        raise AssertionError("Synthetic dataset schema must be exactly year, income.")
-    if synthetic["income"].isna().any() or (synthetic["income"] < 0).any():
-        raise AssertionError("Synthetic income contains invalid values.")
+    rows_written = 0
+    years_written = 0
+
+    with pq.ParquetWriter(
+        output_path,
+        PARQUET_SCHEMA,
+        compression="zstd",
+    ) as writer:
+        for _, row in metadata.iterrows():
+            table = annual_arrow_table(row)
+            writer.write_table(table)
+            rows_written += table.num_rows
+            years_written += 1
 
     expected_rows = int(metadata["positive_income_observation_n"].sum())
-    if len(synthetic) != expected_rows:
+    if rows_written != expected_rows:
         raise AssertionError(
-            f"Expected {expected_rows} rows, generated {len(synthetic)}."
+            f"Expected {expected_rows} rows, wrote {rows_written}."
         )
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    synthetic.to_parquet(output_path, index=False, compression="zstd")
-    return synthetic
+    return rows_written, years_written
 
 
 def parse_args() -> argparse.Namespace:
@@ -217,15 +239,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    synthetic = build_synthetic_dataset(
+    rows, years = build_synthetic_dataset(
         metadata_path=args.metadata,
         output_path=args.output,
         interpolate_missing_tail=not args.no_tail_interpolation,
     )
-    print(
-        f"Saved {len(synthetic):,} rows for "
-        f"{synthetic['year'].nunique()} years to {args.output}"
-    )
+    print(f"Saved {rows:,} rows for {years} years to {args.output}")
 
 
 if __name__ == "__main__":
