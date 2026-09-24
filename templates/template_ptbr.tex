@@ -1,0 +1,289 @@
+%\documentclass[12pt]{elsarticle}
+\documentclass[12pt]{article}
+%\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{dcolumn}
+\usepackage{multirow}
+\usepackage{adjustbox}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{natbib} 
+\usepackage[obeyspaces,hyphens]{url}
+\usepackage{lscape}
+\usepackage{nicefrac}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{txfonts}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+%\usepackage{physics}
+%\usepackage{enumitem}
+%\usepackage{cite}
+%\usepackage{subfigure}
+%\usepackage{url}
+\usepackage[
+    unicode=true,
+    pdfencoding=auto,
+    psdextra,
+    plainpages=false,
+    pdfpagelabels,
+    pagebackref=false,
+    hyperindex,
+    breaklinks=true,
+    colorlinks=true,
+    citecolor=black,
+    linkcolor=black,
+    urlcolor=blue,
+    filecolor=black,
+    bookmarksopen=true
+]{hyperref}
+\usepackage[
+    a4paper,
+    left=18mm,
+    right=18mm,
+    top=16mm,
+    bottom=18mm,
+    headheight=15.8pt,
+    headsep=4mm,
+    footskip=8mm,
+    includeheadfoot
+]{geometry}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pdfstringdefDisableCommands{%
+  \def\fnref#1{}%
+  \def\corref#1{}%
+  \def\ead#1{}%
+  \def\textit#1{#1}%
+  \def\emph#1{#1}%
+  \def\textbf#1{#1}%
+  \def\\{ }%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\def\ni{\noindent}
+\newcommand{\bse}{\begin{subequations}}
+\newcommand{\ese}{\end{subequations}}
+\newcommand{\beq}{\begin{eqnarray}}
+\newcommand{\eeq}{\end{eqnarray}}
+\newcommand{\lb}[1]{\label{#1}}
+\newcommand{\up}[1]{\raisebox{0.7mm}{$\scriptstyle \, #1 $}}
+\newcommand{\dn}[1]{\raisebox{-0.7mm}{$\scriptstyle #1 $}}
+\newcommand{\upb}[1]{\raisebox{0.5mm}{$\scriptstyle #1 $}}
+\newcommand{\deli}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\sty}{\scriptstyle}
+\newcommand{\ssty}{\scriptscriptstyle}
+\newcommand{\tsty}{\textstyle}
+\newcommand{\apg}{\:^{>}_{\sim}\:}
+\newcommand{\apl}{\:^{<}_{\sim}\:}
+\newcommand{\eg}{{\it e.g.\ }}
+\newcommand{\ie}{{\it i.e.\ }}
+\newcommand{\Px}{\mathcal{P}(x)}
+\newcommand{\e}{{\mathrm{e}}}
+\newcommand{\dd}{{\mathrm{d}}}
+\DeclareMathOperator{\sech}{sech}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\pder}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand{\deri}[2]{\ensuremath\frac{d#1}{d#2}}
+\newcommand{\cqd}{{{\hfill $\rule{2.5mm}{2.5mm}$}}\vspace{1cm}\\}
+\newcommand{\sen}{\mathrm{sen}}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\nt}[4]{\ensuremath{ \int_{#1}^{#2} #3 \, \mbox{d}#4}}
+\newcommand{\raiotres}{\sqrt{x^2 + y^2 + z^2}}
+\newcommand{\coordn}[1]{(#1_1,\dotsc,#1_n)}
+\newcommand{\setn}[1]{(#1_1,\dotsc,#1_n)}
+\newcommand{\prodintn}[2]{#1_1#2_1 + \dotsc + #1_n#2_n}
+\newcommand{\traco}{{\text{Tr}}}
+\newcommand{\diff}{\text{d}}
+\newcommand{\te}{\text{t}}
+\newcommand{\di}{\mbox{d}}
+\newcommand{\x}{{\bf x}}
+\newcommand{\versor}[1]{{\bf #1}}
+\newcommand{\y}{{\bf y}}
+\newcommand{\bfe}{{\bf e}}
+\newcommand{\ve}{{\bf v}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ambientes matemáticos e didáticos
+% Number exercises within subsections
+\newtheorem{exercise}{Exercício}[section]
+\newtheorem{definition}{Definição}[section]
+\newtheorem{theorem}{Teorema}[section]
+\newtheorem{example}{Exemplo}[section]
+\newtheorem{corollary}{Corolário}[section]
+\newtheorem{proposition}{Proposição}[section]
+
+\newenvironment{demonstracao}
+{\par\noindent\textbf{Demonstração.}}
+{\hfill$\square$\par}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Definições de formatação do texto
+\numberwithin{equation}{section}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\small\itshape\nouppercase{\leftmark}}
+\fancyfoot[L]{\scriptsize Osvaldo L. Santos-Pereira — \href{mailto:olsp@if.ufrj.br}{olsp@if.ufrj.br}}
+\fancyfoot[C]{\scriptsize \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+%\rfoot{}
+%\lfoot{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstset{
+  language=Python,
+  basicstyle=\fontsize{10}{12}\selectfont\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!60!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  captionpos=b,
+  escapeinside={(*@}{@*)} % If you need to include LaTeX within your code
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Required packages
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{ragged2e}
+
+\urlstyle{same}
+
+% Author block for cover page
+\newcommand{\coverauthor}[4]{%
+{\large\bfseries #1\par}
+\vspace{0.02cm}
+{\normalsize\href{mailto:#2}{#2}\par}
+\vspace{0.02cm}
+{\normalsize\color{blue}\url{#3}\par}
+\vspace{0.02cm}
+{\normalsize\itshape #4\par}
+\vspace{0.8cm}
+}
+
+% About Me block: title same size as author name, justified text
+\long\def\coveraboutme#1{%
+\vspace{0.3cm}
+\begingroup
+{\large\bfseries\color{black} Sobre Mim\par}
+\vspace{0.18cm}
+\small
+\color{black!85}
+\justifying
+\setlength{\parindent}{18pt}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}
+#1
+\par
+\endgroup
+\vspace{0.5cm}
+}
+
+% Discreet section title inside About Me
+\newcommand{\profilesection}[1]{%
+\vspace{0.25cm}
+\noindent{\small\color{black!75} #1\par}
+\vspace{0.15cm}
+}
+
+% Social links: small, plain, no bold
+\newcommand{\sociallink}[2]{%
+\noindent{\footnotesize\color{black!80} #1: \url{#2}\par}
+}
+
+% Chapter cover in lecture-notes style
+\newcommand{\chaptercover}[4]{%
+\begin{titlepage}
+\thispagestyle{empty}
+\raggedright
+\setlength{\parindent}{0pt}
+
+\vspace*{0.2cm}
+
+{\fontsize{34}{40}\selectfont\bfseries #1\par}
+
+\vspace{1.0cm}
+
+{\fontsize{26}{30}\selectfont\bfseries #2\par}
+
+\vspace{1.5cm}
+
+\rule{\textwidth}{2.0pt}
+
+\vspace{1.0cm}
+
+#3
+
+\vspace{0.3cm}
+
+#4
+
+\vfill
+
+\end{titlepage}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\chaptercover
+{Título}
+{Subtítulo}
+{
+\coverauthor
+{Osvaldo L. Santos-Pereira}
+{olsp@if.ufrj.br}
+{https://ozsp12.github.io/}
+{Instituto de Física da Universidade Federal do Rio de Janeiro (UFRJ)}
+}
+{
+\coveraboutme{
+
+Sou doutor em Física pela Universidade Federal do Rio de Janeiro (UFRJ), mestre em Física pela Universidade Estadual de Campinas (Unicamp), mestre em Data Science e Analytics pela Universidade de São Paulo (MBA USP-ESALQ), pós-graduado em Computação Quântica pelo SENAI-CIMATEC e bacharel em Física pela Unicamp.
+
+Atualmente, sou pesquisador colaborador no Instituto de Física da Universidade Federal do Rio de Janeiro (UFRJ), onde desenvolvo pesquisas em Teoria de Warp Drive, Relatividade Geral Clássica, Cosmologia, Econofísica e Física Computacional. Outros interesses de pesquisa incluem Teoria de Buracos de Minhoca, Teoria de Buracos Negros, Gravidade Quântica, Computação e Informação Quântica, Matemática e Inteligência Artificial.
+
+Atuo no setor privado como consultor em ciência de dados e especialista em inteligência artificial. Conduzo projetos de pesquisa em diversos setores, incluindo educação, saúde, medicina, comércio eletrônico e grandes redes de varejo.
+
+
+\vspace{0.3cm}
+\sociallink{Currículo Lattes}{http://lattes.cnpq.br/6730251976463283}
+\sociallink{ResearchGate}{https://www.researchgate.net/profile/Osvaldo-Santos-Pereira}
+\sociallink{ORCID}{https://orcid.org/0000-0003-2231-517X}
+
+\sociallink{Google Scholar}{https://scholar.google.com/citations?user=HIZp0X8AAAAJ&hl=en}
+\sociallink{LinkedIn}{https://www.linkedin.com/in/ozsp12}
+\sociallink{Substack}{https://substack.com/@olsp1982}
+\sociallink{GitHub}{https://github.com/ozsp12}
+\sociallink{YouTube}{https://www.youtube.com/@ozlsp12}
+\sociallink{TikTok}{https://www.tiktok.com/@ozsp12}
+\sociallink{Patreon}{https://www.patreon.com/ozsp12}
+%\sociallink{Medium}{https://medium.com/@ozsp12}
+\sociallink{X (Twitter)}{https://x.com/ozsp12}
+}
+}
+
+% \tableofcontents
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Início do paper
+
+\nocite{*}
+\bibliography{reference}
+%\bibliographystyle{unsrturl}
+\bibliographystyle{unsrt}
+% \bibliographystyle{elsarticle-num}
+\end{document}
