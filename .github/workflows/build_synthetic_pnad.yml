@@ -1,3 +1,4 @@
+# Reproducible build of the canonical synthetic PNAD dataset.
 name: Build synthetic PNAD dataset
 
 on:
