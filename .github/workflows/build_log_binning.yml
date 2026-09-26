@@ -52,12 +52,19 @@ jobs:
           ]
           if df.columns.tolist() != expected_columns:
               raise SystemExit(f"Unexpected CSV schema: {df.columns.tolist()}")
-          if len(df) != 4725:
-              raise SystemExit(f"Expected 4725 bin rows, got {len(df)}")
+          if len(df) != 1575:
+              raise SystemExit(f"Expected 1575 bin rows, got {len(df)}")
+          if df["N"].nunique() != 1 or int(df["N"].iloc[0]) != 1_000_000:
+              raise SystemExit("CSV must contain only N=1,000,000")
 
-          pngs = sorted(root.glob("*.png"))
-          if len(pngs) != 15:
-              raise SystemExit(f"Expected 15 PNG figures, got {len(pngs)}")
+          expected_pngs = {
+              "histograms_N1000000.png",
+              "ccdf_N1000000_grid.png",
+              "bin_means_N1000000_grid.png",
+          }
+          pngs = {p.name for p in root.glob("*.png")}
+          if pngs != expected_pngs:
+              raise SystemExit(f"Unexpected PNG set: {sorted(pngs)}")
 
           print(f"Validated {len(df):,} CSV rows and {len(pngs)} figures.")
           PY

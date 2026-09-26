@@ -1,9 +1,10 @@
 """Run compact binning experiments for exponential, lognormal, and Pareto data.
 
-Synthetic samples are generated in memory and are not persisted. For each
-sample size N, number of bins K, distribution, and binning method, the script
-stores one row per bin in a single long CSV and creates the figures used by the
-lecture note.
+A single synthetic sample size N=1,000,000 is used throughout. Raw samples are
+generated in memory and are not persisted. The long CSV stores one row per bin
+for cut, qcut, and logarithmic binning. Histograms use the conventional
+NumPy/Matplotlib equal-width construction with absolute frequency and a
+logarithmic y-axis.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ ROOT = Path(__file__).resolve().parent
 CSV_PATH = ROOT / "binning_experiments.csv"
 
 SEED = 20260925
-N_VALUES = (10_000, 100_000, 1_000_000)
+N = 1_000_000
 K_VALUES = (25, 50, 100)
 DISTRIBUTIONS = ("exponential", "lognormal", "pareto")
 METHODS = ("cut", "qcut", "log_binning")
@@ -31,14 +32,14 @@ PARETO_ALPHA_PDF = 2.5
 PARETO_XMIN = 1.0
 
 
-def generate_distributions(n: int, seed: int = SEED) -> dict[str, np.ndarray]:
-    """Generate nested synthetic samples using one deterministic RNG stream."""
-    rng = np.random.default_rng(seed)
-    exponential = rng.exponential(scale=EXPONENTIAL_SCALE, size=n)
-    lognormal = rng.lognormal(mean=LOGNORMAL_MU, sigma=LOGNORMAL_SIGMA, size=n)
+def generate_distributions() -> dict[str, np.ndarray]:
+    """Generate the three deterministic synthetic samples."""
+    rng = np.random.default_rng(SEED)
+    exponential = rng.exponential(scale=EXPONENTIAL_SCALE, size=N)
+    lognormal = rng.lognormal(mean=LOGNORMAL_MU, sigma=LOGNORMAL_SIGMA, size=N)
 
     # p(x) = (alpha - 1) x_min^(alpha - 1) x^(-alpha), x >= x_min.
-    u = rng.random(n)
+    u = rng.random(N)
     pareto = PARETO_XMIN * (1.0 - u) ** (-1.0 / (PARETO_ALPHA_PDF - 1.0))
 
     return {
@@ -99,7 +100,6 @@ def bin_codes_and_edges(values: np.ndarray, k: int, method: str) -> tuple[np.nda
 def summarize_bins(
     values: np.ndarray,
     distribution: str,
-    n: int,
     k: int,
     method: str,
 ) -> pd.DataFrame:
@@ -120,16 +120,16 @@ def summarize_bins(
     stats["p99"] = grouped.quantile(0.99).reindex(range(k))
 
     result = stats.reset_index()
-    result["bin_id"] = result["bin_id"] + 1
+    result["bin_id"] += 1
     result["bin_left"] = edges[:-1]
     result["bin_right"] = edges[1:]
     result["bin_width"] = result["bin_right"] - result["bin_left"]
     result["bin_center"] = 0.5 * (result["bin_left"] + result["bin_right"])
-    result["frequency"] = result["count"].fillna(0.0) / n
-    result["density"] = result["count"].fillna(0.0) / (n * result["bin_width"])
+    result["frequency"] = result["count"].fillna(0.0) / N
+    result["density"] = result["count"].fillna(0.0) / (N * result["bin_width"])
 
     result.insert(0, "K", k)
-    result.insert(0, "N", n)
+    result.insert(0, "N", N)
     result.insert(0, "method", method)
     result.insert(0, "distribution", distribution)
 
@@ -156,10 +156,8 @@ def summarize_bins(
     ]
     result = result[columns]
 
-    if int(result["count"].fillna(0).sum()) != n:
-        raise AssertionError(
-            f"Lost observations for {distribution}, N={n}, K={k}, {method}."
-        )
+    if int(result["count"].fillna(0).sum()) != N:
+        raise AssertionError(f"Lost observations for {distribution}, K={k}, {method}.")
     return result
 
 
@@ -167,15 +165,9 @@ def empirical_ccdf(values: np.ndarray, max_points: int = 4000) -> tuple[np.ndarr
     """Return a tail-resolved down-sampled empirical CCDF."""
     x = np.sort(values)
     n = len(x)
-    if n <= max_points:
-        idx = np.arange(n)
-    else:
-        remaining = np.unique(
-            np.rint(np.geomspace(1, n, max_points)).astype(np.int64)
-        )
-        idx = np.sort(n - remaining)
-    y = (n - idx) / n
-    return x[idx], y
+    remaining = np.unique(np.rint(np.geomspace(1, n, max_points)).astype(np.int64))
+    idx = np.sort(n - remaining)
+    return x[idx], (n - idx) / n
 
 
 def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, float]:
@@ -183,70 +175,63 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
     mask = (x > 0) & (ccdf >= 0.01) & (ccdf <= 0.50)
     lx = np.log10(x[mask])
     ly = np.log10(ccdf[mask])
-    if len(lx) < 3:
-        return np.nan, np.nan, np.nan
     slope, intercept = np.polyfit(lx, ly, 1)
     fitted = slope * lx + intercept
     ss_res = float(np.sum((ly - fitted) ** 2))
     ss_tot = float(np.sum((ly - ly.mean()) ** 2))
-    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else np.nan
+    r2 = 1.0 - ss_res / ss_tot
     return float(slope), float(intercept), float(r2)
 
 
-def make_histogram_grid(table: pd.DataFrame, n: int, k: int) -> None:
-    """Create a 3x3 density-histogram grid for one (N, K) pair."""
-    fig, axes = plt.subplots(3, 3, figsize=(13, 10), constrained_layout=True)
+def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
+    """Create the conventional 3x3 histogram grid for K=25, 50, and 100."""
+    fig, axes = plt.subplots(3, 3, figsize=(16, 12), constrained_layout=True)
 
-    for i, distribution in enumerate(DISTRIBUTIONS):
-        for j, method in enumerate(METHODS):
+    for i, k in enumerate(K_VALUES):
+        for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
-            subset = table[
-                (table["distribution"] == distribution)
-                & (table["method"] == method)
-                & (table["N"] == n)
-                & (table["K"] == k)
-            ].sort_values("bin_id")
+            values = samples[distribution]
+            counts, edges = np.histogram(values, bins=k)
 
-            density = subset["density"].to_numpy(dtype=float)
-            density = np.where(density > 0, density, np.nan)
-            edges = np.r_[
-                subset["bin_left"].to_numpy(dtype=float),
-                subset["bin_right"].to_numpy(dtype=float)[-1],
-            ]
-            ax.stairs(density, edges)
-            ax.set_xscale("log")
+            ax.bar(
+                edges[:-1],
+                counts,
+                width=np.diff(edges),
+                align="edge",
+                edgecolor="black",
+                linewidth=0.35,
+            )
             ax.set_yscale("log")
-            ax.grid(True, which="both", alpha=0.2)
+            ax.set_ylim(bottom=1)
+            ax.grid(axis="y", alpha=0.25, linestyle="--")
+            ax.set_title(f"{distribution.title()} (K = {k})")
+            ax.set_xlabel("x")
+            ax.set_ylabel("Frequency (log)")
 
-            if i == 0:
-                ax.set_title(method.replace("_", " ").title())
-            if j == 0:
-                ax.set_ylabel(f"{distribution.title()}\nDensity")
-            if i == 2:
-                ax.set_xlabel("x")
-
-    fig.suptitle(f"Binning comparison: N={n:,}, K={k}")
-    fig.savefig(ROOT / f"histograms_N{n}_K{k}.png", dpi=180)
+    fig.suptitle(
+        "Synthetic histograms\n"
+        f"N = {N:,} observations; equal-width bins; y-axis in log scale",
+        fontsize=18,
+    )
+    fig.savefig(ROOT / f"histograms_N{N}.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
 
-def make_ccdf_grid(samples: dict[str, np.ndarray], n: int) -> None:
+def make_ccdf_grid(samples: dict[str, np.ndarray]) -> None:
     """Create a K-by-distribution CCDF grid; rows repeat the K-independent CCDF."""
     fig, axes = plt.subplots(3, 3, figsize=(13, 10), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
         for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
-            values = samples[distribution][:n]
-            x, ccdf = empirical_ccdf(values)
+            x, ccdf = empirical_ccdf(samples[distribution])
             slope, intercept, r2 = loglog_tail_ols(x, ccdf)
 
             ax.plot(x, ccdf, linewidth=1.0, label="Empirical CCDF")
             fit_mask = (x > 0) & (ccdf >= 0.01) & (ccdf <= 0.50)
-            if np.isfinite(slope):
-                x_fit = x[fit_mask]
-                y_fit = 10 ** (intercept + slope * np.log10(x_fit))
-                ax.plot(x_fit, y_fit, linestyle="--", linewidth=1.0, label="OLS")
+            x_fit = x[fit_mask]
+            y_fit = 10 ** (intercept + slope * np.log10(x_fit))
+            ax.plot(x_fit, y_fit, linestyle="--", linewidth=1.0, label="OLS")
 
             ax.set_xscale("log")
             ax.set_yscale("log")
@@ -268,14 +253,14 @@ def make_ccdf_grid(samples: dict[str, np.ndarray], n: int) -> None:
 
     axes[0, 0].legend(loc="best", fontsize=8)
     fig.suptitle(
-        f"Empirical CCDF and illustrative log-log OLS: N={n:,}\n"
+        f"Empirical CCDF and illustrative log-log OLS: N={N:,}\n"
         "CCDF is independent of K; rows repeat it for comparison"
     )
-    fig.savefig(ROOT / f"ccdf_N{n}_grid.png", dpi=180)
+    fig.savefig(ROOT / f"ccdf_N{N}_grid.png", dpi=180)
     plt.close(fig)
 
 
-def make_bin_mean_grid(table: pd.DataFrame, n: int) -> None:
+def make_bin_mean_grid(table: pd.DataFrame) -> None:
     """Create a K-by-distribution grid of mean value versus bin id."""
     fig, axes = plt.subplots(3, 3, figsize=(13, 10), constrained_layout=True)
 
@@ -286,7 +271,6 @@ def make_bin_mean_grid(table: pd.DataFrame, n: int) -> None:
                 subset = table[
                     (table["distribution"] == distribution)
                     & (table["method"] == method)
-                    & (table["N"] == n)
                     & (table["K"] == k)
                 ].sort_values("bin_id")
                 ax.plot(
@@ -306,38 +290,33 @@ def make_bin_mean_grid(table: pd.DataFrame, n: int) -> None:
                 ax.set_xlabel("Bin id")
 
     axes[0, 0].legend(loc="best", fontsize=8)
-    fig.suptitle(f"Mean value by bin and method: N={n:,}")
-    fig.savefig(ROOT / f"bin_means_N{n}_grid.png", dpi=180)
+    fig.suptitle(f"Mean value by bin and method: N={N:,}")
+    fig.savefig(ROOT / f"bin_means_N{N}_grid.png", dpi=180)
     plt.close(fig)
 
 
 def main() -> None:
-    max_n = max(N_VALUES)
-    samples = generate_distributions(max_n)
+    samples = generate_distributions()
 
-    tables: list[pd.DataFrame] = []
-    for n in N_VALUES:
-        for distribution in DISTRIBUTIONS:
-            values = samples[distribution][:n]
-            for k in K_VALUES:
-                for method in METHODS:
-                    tables.append(summarize_bins(values, distribution, n, k, method))
-
+    tables = [
+        summarize_bins(samples[distribution], distribution, k, method)
+        for distribution in DISTRIBUTIONS
+        for k in K_VALUES
+        for method in METHODS
+    ]
     table = pd.concat(tables, ignore_index=True)
     table.to_csv(CSV_PATH, index=False, float_format="%.12g")
 
-    expected_rows = len(N_VALUES) * len(DISTRIBUTIONS) * len(METHODS) * sum(K_VALUES)
+    expected_rows = len(DISTRIBUTIONS) * len(METHODS) * sum(K_VALUES)
     if len(table) != expected_rows:
         raise AssertionError(f"Expected {expected_rows} rows, got {len(table)}")
 
-    for n in N_VALUES:
-        for k in K_VALUES:
-            make_histogram_grid(table, n, k)
-        make_ccdf_grid(samples, n)
-        make_bin_mean_grid(table, n)
+    make_histogram_grid(samples)
+    make_ccdf_grid(samples)
+    make_bin_mean_grid(table)
 
     print(f"Saved {len(table):,} bin rows to {CSV_PATH.name}")
-    print(f"Generated {len(N_VALUES) * (len(K_VALUES) + 2)} figures")
+    print("Generated 3 figures")
 
 
 if __name__ == "__main__":
