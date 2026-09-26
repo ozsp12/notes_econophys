@@ -221,13 +221,12 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
                 edgecolor="black",
                 linewidth=0.8,
             )
-            ax.set_yscale("log")
-            ax.set_ylim(1, 1e5)
+            ax.set_ylim(bottom=0)
             ax.margins(x=0)
             ax.grid(axis="y", alpha=0.35, linestyle="--")
             ax.set_title(f"{distribution.title()} (K = {k})", fontsize=13)
             ax.set_xlabel("Income")
-            ax.set_ylabel("Frequency (log)")
+            ax.set_ylabel("Frequency")
 
     fig.savefig(ROOT / "histograms.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
