@@ -5,11 +5,9 @@ generated in memory and are not persisted. The long CSV stores one row per bin
 for cut, qcut, and logarithmic binning.
 
 The histogram figure is a separate pedagogical visualization based on
-N=100,000 observations. Its equal-width bins are defined directly on the
-visible plotting intervals rather than on the full sample support. This is
-essential for heavy-tailed data: computing the bins over the full Pareto
-sample and only then clipping the x-axis would collapse almost all visible
-observations into the first displayed bin.
+N=100,000 observations. Its equal-width bins cover the complete observed
+support of each synthetic sample; no fixed upper x-limit is imposed, so the
+sample tail is not truncated in the displayed histogram.
 """
 
 from __future__ import annotations
@@ -43,12 +41,6 @@ HISTOGRAM_COLORS = {
     "exponential": "tab:blue",
     "lognormal": "tab:orange",
     "pareto": "tab:green",
-}
-
-HISTOGRAM_XLIMS = {
-    "exponential": (0.0, 500.0),
-    "lognormal": (0.0, 1000.0),
-    "pareto": (0.0, 5000.0),
 }
 
 
@@ -207,21 +199,18 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the 3x3 reference histogram grid without a global title."""
+    """Create the 3x3 histogram grid without a global title or x-tail clipping."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 10.5), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
         for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
             values = samples[distribution]
-            xmin, xmax = HISTOGRAM_XLIMS[distribution]
 
-            # The reference figure uses K equal-width bins on the displayed
-            # interval itself. Values outside that interval are intentionally
-            # omitted from the visible histogram rather than being used to
-            # determine the bin edges.
-            edges = np.linspace(xmin, xmax, k + 1)
-            counts, _ = np.histogram(values, bins=edges)
+            # Use the complete observed sample support. np.histogram chooses
+            # K equal-width bins from the sample minimum to the sample maximum,
+            # so every observation, including the far tail, is represented.
+            counts, edges = np.histogram(values, bins=k)
 
             ax.bar(
                 edges[:-1],
@@ -234,7 +223,7 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
             )
             ax.set_yscale("log")
             ax.set_ylim(1, 1e5)
-            ax.set_xlim(xmin, xmax)
+            ax.margins(x=0)
             ax.grid(axis="y", alpha=0.35, linestyle="--")
             ax.set_title(f"{distribution.title()} (K = {k})", fontsize=13)
             ax.set_xlabel("Income")
