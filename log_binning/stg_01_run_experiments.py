@@ -38,6 +38,12 @@ HISTOGRAM_COLORS = {
     "pareto": "tab:green",
 }
 
+HISTOGRAM_XLIMS = {
+    "exponential": (0.0, 500.0),
+    "lognormal": (0.0, 1000.0),
+    "pareto": (0.0, 5000.0),
+}
+
 
 def generate_distributions() -> dict[str, np.ndarray]:
     """Generate the three deterministic synthetic samples."""
@@ -191,15 +197,13 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the 3x3 full-sample histogram grid for K=25, 50, and 100."""
+    """Create the approved 3x3 full-sample histogram grid."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 12), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
         for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
             values = samples[distribution]
-
-            # Use the complete sample. No clipping, truncation, or fixed range.
             counts, edges = np.histogram(values, bins=k)
 
             ax.bar(
@@ -209,18 +213,19 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
                 align="edge",
                 color=HISTOGRAM_COLORS[distribution],
                 edgecolor="black",
-                linewidth=0.55,
+                linewidth=0.8,
             )
             ax.set_yscale("log")
             ax.set_ylim(bottom=1)
-            ax.grid(axis="y", alpha=0.25, linestyle="--")
+            ax.set_xlim(*HISTOGRAM_XLIMS[distribution])
+            ax.grid(axis="y", alpha=0.35, linestyle="--")
             ax.set_title(f"{distribution.title()} (K = {k})", fontsize=13)
             ax.set_xlabel("Income")
             ax.set_ylabel("Frequency (log)")
 
     fig.suptitle(
         "Synthetic Income Histograms\n"
-        f"N = {N:,} observations; equal-width bins; y-axis in log scale",
+        "N = 1000000 observations; equal-width bins; y-axis in log scale",
         fontsize=20,
     )
     fig.savefig(ROOT / "histograms.png", dpi=200, bbox_inches="tight")
