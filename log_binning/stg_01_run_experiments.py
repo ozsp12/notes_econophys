@@ -313,16 +313,15 @@ def make_bin_mean_grid(table: pd.DataFrame) -> None:
                     label=method.replace("_", " "),
                 )
 
-            ax.set_yscale("log")
-            ax.grid(True, which="both", alpha=0.2)
+            ax.grid(True, alpha=0.2)
             if i == 0:
                 ax.set_title(distribution.title())
             if j == 0:
                 ax.set_ylabel(f"K={k}\nMean in bin")
             if i == 2:
                 ax.set_xlabel("Bin id")
+            ax.legend(loc="best", fontsize=8)
 
-    axes[0, 0].legend(loc="best", fontsize=8)
     fig.suptitle(f"Mean value by bin and method: N={N:,}")
     fig.savefig(ROOT / "bin_means_grid.png", dpi=180)
     plt.close(fig)
