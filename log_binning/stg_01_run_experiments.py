@@ -2,9 +2,9 @@
 
 A single synthetic sample size N=1,000,000 is used throughout. Raw samples are
 generated in memory and are not persisted. The long CSV stores one row per bin
-for cut, qcut, and logarithmic binning. Histograms use the conventional
-NumPy/Matplotlib equal-width construction with absolute frequency and a
-logarithmic y-axis.
+for cut, qcut, and logarithmic binning. Histograms use conventional equal-width
+bins, absolute frequency, a logarithmic y-axis, and fixed display ranges chosen
+to make the three distribution shapes readable in a common 3x3 layout.
 """
 
 from __future__ import annotations
@@ -25,11 +25,24 @@ K_VALUES = (25, 50, 100)
 DISTRIBUTIONS = ("exponential", "lognormal", "pareto")
 METHODS = ("cut", "qcut", "log_binning")
 
-EXPONENTIAL_SCALE = 1.0
-LOGNORMAL_MU = 0.0
-LOGNORMAL_SIGMA = 1.0
+# Synthetic scales are chosen only to put the three examples on readable
+# income-like horizontal ranges. They do not change the distribution families.
+EXPONENTIAL_SCALE = 50.0
+LOGNORMAL_MU = float(np.log(150.0))
+LOGNORMAL_SIGMA = 0.55
 PARETO_ALPHA_PDF = 2.5
-PARETO_XMIN = 1.0
+PARETO_XMIN = 100.0
+
+HISTOGRAM_XMAX = {
+    "exponential": 500.0,
+    "lognormal": 1000.0,
+    "pareto": 5000.0,
+}
+HISTOGRAM_COLORS = {
+    "exponential": "tab:blue",
+    "lognormal": "tab:orange",
+    "pareto": "tab:green",
+}
 
 
 def generate_distributions() -> dict[str, np.ndarray]:
@@ -184,36 +197,43 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the conventional 3x3 histogram grid for K=25, 50, and 100."""
+    """Create the approved 3x3 histogram layout for K=25, 50, and 100."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 12), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
         for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
             values = samples[distribution]
-            counts, edges = np.histogram(values, bins=k)
+            xmax = HISTOGRAM_XMAX[distribution]
+
+            # Fixed display ranges prevent rare extremes from compressing the
+            # equal-width histogram. Values outside the displayed interval are
+            # omitted from this figure only; all analyses use the full sample.
+            counts, edges = np.histogram(values, bins=k, range=(0.0, xmax))
 
             ax.bar(
                 edges[:-1],
                 counts,
                 width=np.diff(edges),
                 align="edge",
+                color=HISTOGRAM_COLORS[distribution],
                 edgecolor="black",
-                linewidth=0.35,
+                linewidth=0.55,
             )
+            ax.set_xlim(0.0, xmax)
             ax.set_yscale("log")
             ax.set_ylim(bottom=1)
             ax.grid(axis="y", alpha=0.25, linestyle="--")
-            ax.set_title(f"{distribution.title()} (K = {k})")
-            ax.set_xlabel("x")
+            ax.set_title(f"{distribution.title()} (K = {k})", fontsize=13)
+            ax.set_xlabel("Income")
             ax.set_ylabel("Frequency (log)")
 
     fig.suptitle(
-        "Synthetic histograms\n"
+        "Synthetic Income Histograms\n"
         f"N = {N:,} observations; equal-width bins; y-axis in log scale",
-        fontsize=18,
+        fontsize=20,
     )
-    fig.savefig(ROOT / f"histograms_N{N}.png", dpi=200, bbox_inches="tight")
+    fig.savefig(ROOT / "histograms.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -256,7 +276,7 @@ def make_ccdf_grid(samples: dict[str, np.ndarray]) -> None:
         f"Empirical CCDF and illustrative log-log OLS: N={N:,}\n"
         "CCDF is independent of K; rows repeat it for comparison"
     )
-    fig.savefig(ROOT / f"ccdf_N{N}_grid.png", dpi=180)
+    fig.savefig(ROOT / "ccdf_grid.png", dpi=180)
     plt.close(fig)
 
 
@@ -291,7 +311,7 @@ def make_bin_mean_grid(table: pd.DataFrame) -> None:
 
     axes[0, 0].legend(loc="best", fontsize=8)
     fig.suptitle(f"Mean value by bin and method: N={N:,}")
-    fig.savefig(ROOT / f"bin_means_N{N}_grid.png", dpi=180)
+    fig.savefig(ROOT / "bin_means_grid.png", dpi=180)
     plt.close(fig)
 
 

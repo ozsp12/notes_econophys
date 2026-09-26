@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
 
+      - name: Remove generated figures
+        run: rm -f log_binning/*.png
+
       - name: Run experiments
         run: python log_binning/stg_01_run_experiments.py
 
@@ -58,9 +61,9 @@ jobs:
               raise SystemExit("CSV must contain only N=1,000,000")
 
           expected_pngs = {
-              "histograms_N1000000.png",
-              "ccdf_N1000000_grid.png",
-              "bin_means_N1000000_grid.png",
+              "histograms.png",
+              "ccdf_grid.png",
+              "bin_means_grid.png",
           }
           pngs = {p.name for p in root.glob("*.png")}
           if pngs != expected_pngs:
@@ -73,7 +76,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add log_binning/binning_experiments.csv log_binning/*.png
+          git add -A log_binning
           if git diff --cached --quiet; then
             echo "Log-binning assets are already up to date."
           else
