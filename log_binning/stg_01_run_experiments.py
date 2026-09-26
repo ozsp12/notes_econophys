@@ -5,9 +5,10 @@ generated in memory and are not persisted. The long CSV stores one row per bin
 for cut, qcut, and logarithmic binning.
 
 The histogram figure is a separate pedagogical visualization based on
-N=100,000 observations. Its equal-width bins cover the complete observed
-support of each synthetic sample; no fixed upper x-limit is imposed, so the
-sample tail is not truncated in the displayed histogram.
+N=100,000 observations. Equal-width histogram counts are computed from the
+complete observed support of each synthetic sample. Only the displayed Pareto
+panel is cropped at a high quantile to avoid a few extreme observations
+compressing the informative part of the distribution.
 """
 
 from __future__ import annotations
@@ -36,6 +37,7 @@ LOGNORMAL_MU = float(np.log(150.0))
 LOGNORMAL_SIGMA = 0.55
 PARETO_ALPHA_PDF = 2.5
 PARETO_XMIN = 100.0
+PARETO_DISPLAY_QUANTILE = 0.999
 
 HISTOGRAM_COLORS = {
     "exponential": "tab:blue",
@@ -199,7 +201,7 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the 3x3 histogram grid without a global title or x-tail clipping."""
+    """Create the 3x3 histogram grid with a log-y, visually cropped Pareto panel."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 10.5), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
@@ -207,9 +209,8 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
             ax = axes[i, j]
             values = samples[distribution]
 
-            # Use the complete observed sample support. np.histogram chooses
-            # K equal-width bins from the sample minimum to the sample maximum,
-            # so every observation, including the far tail, is represented.
+            # Histogram counts always use the complete observed sample support.
+            # The Pareto crop below changes only the visible x-window.
             counts, edges = np.histogram(values, bins=k)
 
             ax.bar(
@@ -221,8 +222,15 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
                 edgecolor="black",
                 linewidth=0.8,
             )
-            ax.set_ylim(bottom=0)
             ax.margins(x=0)
+            if distribution == "pareto":
+                ax.set_yscale("log")
+                ax.set_xlim(
+                    left=float(values.min()),
+                    right=float(np.quantile(values, PARETO_DISPLAY_QUANTILE)),
+                )
+            else:
+                ax.set_ylim(bottom=0)
             ax.grid(axis="y", alpha=0.35, linestyle="--")
             ax.set_title(f"{distribution.title()} (K = {k})", fontsize=13)
             ax.set_xlabel("Income")
