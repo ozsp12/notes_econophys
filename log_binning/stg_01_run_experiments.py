@@ -1,9 +1,15 @@
 """Run compact binning experiments for exponential, lognormal, and Pareto data.
 
-A single synthetic sample size N=1,000,000 is used throughout. Raw samples are
+The statistical experiments use N=1,000,000 observations. Raw samples are
 generated in memory and are not persisted. The long CSV stores one row per bin
-for cut, qcut, and logarithmic binning. Histograms use conventional equal-width
-bins over the complete sample, absolute frequency, and a logarithmic y-axis.
+for cut, qcut, and logarithmic binning.
+
+The histogram figure is a separate pedagogical visualization based on
+N=100,000 observations. Its equal-width bins are defined directly on the
+visible plotting intervals rather than on the full sample support. This is
+essential for heavy-tailed data: computing the bins over the full Pareto
+sample and only then clipping the x-axis would collapse almost all visible
+observations into the first displayed bin.
 """
 
 from __future__ import annotations
@@ -20,6 +26,7 @@ CSV_PATH = ROOT / "binning_experiments.csv"
 
 SEED = 20260925
 N = 1_000_000
+HISTOGRAM_N = 100_000
 K_VALUES = (25, 50, 100)
 DISTRIBUTIONS = ("exponential", "lognormal", "pareto")
 METHODS = ("cut", "qcut", "log_binning")
@@ -45,14 +52,17 @@ HISTOGRAM_XLIMS = {
 }
 
 
-def generate_distributions() -> dict[str, np.ndarray]:
-    """Generate the three deterministic synthetic samples."""
-    rng = np.random.default_rng(SEED)
-    exponential = rng.exponential(scale=EXPONENTIAL_SCALE, size=N)
-    lognormal = rng.lognormal(mean=LOGNORMAL_MU, sigma=LOGNORMAL_SIGMA, size=N)
+def generate_distributions(
+    n: int = N,
+    seed: int = SEED,
+) -> dict[str, np.ndarray]:
+    """Generate deterministic synthetic samples of the three distributions."""
+    rng = np.random.default_rng(seed)
+    exponential = rng.exponential(scale=EXPONENTIAL_SCALE, size=n)
+    lognormal = rng.lognormal(mean=LOGNORMAL_MU, sigma=LOGNORMAL_SIGMA, size=n)
 
     # p(x) = (alpha - 1) x_min^(alpha - 1) x^(-alpha), x >= x_min.
-    u = rng.random(N)
+    u = rng.random(n)
     pareto = PARETO_XMIN * (1.0 - u) ** (-1.0 / (PARETO_ALPHA_PDF - 1.0))
 
     return {
@@ -197,14 +207,21 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the approved 3x3 full-sample histogram grid without a global title."""
-    fig, axes = plt.subplots(3, 3, figsize=(16, 12), constrained_layout=True)
+    """Create the 3x3 reference histogram grid without a global title."""
+    fig, axes = plt.subplots(3, 3, figsize=(16, 10.5), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
         for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
             values = samples[distribution]
-            counts, edges = np.histogram(values, bins=k)
+            xmin, xmax = HISTOGRAM_XLIMS[distribution]
+
+            # The reference figure uses K equal-width bins on the displayed
+            # interval itself. Values outside that interval are intentionally
+            # omitted from the visible histogram rather than being used to
+            # determine the bin edges.
+            edges = np.linspace(xmin, xmax, k + 1)
+            counts, _ = np.histogram(values, bins=edges)
 
             ax.bar(
                 edges[:-1],
@@ -216,8 +233,8 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
                 linewidth=0.8,
             )
             ax.set_yscale("log")
-            ax.set_ylim(bottom=1)
-            ax.set_xlim(*HISTOGRAM_XLIMS[distribution])
+            ax.set_ylim(1, 1e5)
+            ax.set_xlim(xmin, xmax)
             ax.grid(axis="y", alpha=0.35, linestyle="--")
             ax.set_title(f"{distribution.title()} (K = {k})", fontsize=13)
             ax.set_xlabel("Income")
@@ -321,7 +338,8 @@ def main() -> None:
     if len(table) != expected_rows:
         raise AssertionError(f"Expected {expected_rows} rows, got {len(table)}")
 
-    make_histogram_grid(samples)
+    histogram_samples = generate_distributions(n=HISTOGRAM_N)
+    make_histogram_grid(histogram_samples)
     make_ccdf_grid(samples)
     make_bin_mean_grid(table)
 
