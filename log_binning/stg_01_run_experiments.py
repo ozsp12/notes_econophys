@@ -5,10 +5,11 @@ generated in memory and are not persisted. The long CSV stores one row per bin
 for cut, qcut, and logarithmic binning.
 
 The histogram figure is a separate pedagogical visualization based on
-N=100,000 observations. Equal-width histogram counts are computed from the
-complete observed support of each synthetic sample. Only the displayed Pareto
-panel is cropped at a high quantile to avoid a few extreme observations
-compressing the informative part of the distribution.
+N=100,000 observations. Exponential and lognormal histograms cover their full
+observed support. The Pareto histogram uses a conservative high-quantile display
+window so that only the most extreme observations are visually compressed while
+the long tail remains resolved; observations beyond the display limit are
+accumulated in the final visible bin rather than discarded.
 """
 
 from __future__ import annotations
@@ -37,7 +38,7 @@ LOGNORMAL_MU = float(np.log(150.0))
 LOGNORMAL_SIGMA = 0.55
 PARETO_ALPHA_PDF = 2.5
 PARETO_XMIN = 100.0
-PARETO_DISPLAY_QUANTILE = 0.999
+PARETO_DISPLAY_QUANTILE = 0.99995
 
 HISTOGRAM_COLORS = {
     "exponential": "tab:blue",
@@ -201,7 +202,7 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the 3x3 histogram grid with a log-y, visually cropped Pareto panel."""
+    """Create the 3x3 histogram grid with a conservatively cropped Pareto tail."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 10.5), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
@@ -209,9 +210,21 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
             ax = axes[i, j]
             values = samples[distribution]
 
-            # Histogram counts always use the complete observed sample support.
-            # The Pareto crop below changes only the visible x-window.
-            counts, edges = np.histogram(values, bins=k)
+            if distribution == "pareto":
+                display_xmin = float(values.min())
+                display_xmax = float(np.quantile(values, PARETO_DISPLAY_QUANTILE))
+
+                # Define the equal-width bins on the visible long-tail range.
+                # Only the most extreme observations lie above display_xmax;
+                # fold them into the last bin so total sample mass is preserved.
+                display_values = np.minimum(values, display_xmax)
+                counts, edges = np.histogram(
+                    display_values,
+                    bins=k,
+                    range=(display_xmin, display_xmax),
+                )
+            else:
+                counts, edges = np.histogram(values, bins=k)
 
             ax.bar(
                 edges[:-1],
@@ -225,10 +238,7 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
             ax.margins(x=0)
             if distribution == "pareto":
                 ax.set_yscale("log")
-                ax.set_xlim(
-                    left=float(values.min()),
-                    right=float(np.quantile(values, PARETO_DISPLAY_QUANTILE)),
-                )
+                ax.set_xlim(left=display_xmin, right=display_xmax)
             else:
                 ax.set_ylim(bottom=0)
             ax.grid(axis="y", alpha=0.35, linestyle="--")
