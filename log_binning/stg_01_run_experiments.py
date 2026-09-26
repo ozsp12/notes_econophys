@@ -197,7 +197,7 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the approved 3x3 full-sample histogram grid."""
+    """Create the approved 3x3 full-sample histogram grid without a global title."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 12), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
@@ -223,11 +223,6 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
             ax.set_xlabel("Income")
             ax.set_ylabel("Frequency (log)")
 
-    fig.suptitle(
-        "Synthetic Income Histograms\n"
-        "N = 1000000 observations; equal-width bins; y-axis in log scale",
-        fontsize=20,
-    )
     fig.savefig(ROOT / "histograms.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
