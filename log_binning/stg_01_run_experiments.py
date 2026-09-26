@@ -3,8 +3,7 @@
 A single synthetic sample size N=1,000,000 is used throughout. Raw samples are
 generated in memory and are not persisted. The long CSV stores one row per bin
 for cut, qcut, and logarithmic binning. Histograms use conventional equal-width
-bins, absolute frequency, a logarithmic y-axis, and fixed display ranges chosen
-to make the three distribution shapes readable in a common 3x3 layout.
+bins over the complete sample, absolute frequency, and a logarithmic y-axis.
 """
 
 from __future__ import annotations
@@ -33,11 +32,6 @@ LOGNORMAL_SIGMA = 0.55
 PARETO_ALPHA_PDF = 2.5
 PARETO_XMIN = 100.0
 
-HISTOGRAM_XMAX = {
-    "exponential": 500.0,
-    "lognormal": 1000.0,
-    "pareto": 5000.0,
-}
 HISTOGRAM_COLORS = {
     "exponential": "tab:blue",
     "lognormal": "tab:orange",
@@ -197,19 +191,16 @@ def loglog_tail_ols(x: np.ndarray, ccdf: np.ndarray) -> tuple[float, float, floa
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
-    """Create the approved 3x3 histogram layout for K=25, 50, and 100."""
+    """Create the 3x3 full-sample histogram grid for K=25, 50, and 100."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 12), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
         for j, distribution in enumerate(DISTRIBUTIONS):
             ax = axes[i, j]
             values = samples[distribution]
-            xmax = HISTOGRAM_XMAX[distribution]
 
-            # Fixed display ranges prevent rare extremes from compressing the
-            # equal-width histogram. Values outside the displayed interval are
-            # omitted from this figure only; all analyses use the full sample.
-            counts, edges = np.histogram(values, bins=k, range=(0.0, xmax))
+            # Use the complete sample. No clipping, truncation, or fixed range.
+            counts, edges = np.histogram(values, bins=k)
 
             ax.bar(
                 edges[:-1],
@@ -220,7 +211,6 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> None:
                 edgecolor="black",
                 linewidth=0.55,
             )
-            ax.set_xlim(0.0, xmax)
             ax.set_yscale("log")
             ax.set_ylim(bottom=1)
             ax.grid(axis="y", alpha=0.25, linestyle="--")
