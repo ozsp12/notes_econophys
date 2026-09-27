@@ -6,9 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "log_binning/stg_01_run_experiments.py"
-      - "log_binning/stg_02_newman_powerlaw_grid.py"
-      - "log_binning/stg_03_note_assets.py"
+      - "log_binning/generate_log_binning_assets.py"
       - "requirements.txt"
       - ".github/workflows/build_log_binning.yml"
 
@@ -38,10 +36,7 @@ jobs:
           rm -f log_binning/assets/newman_powerlaw/*.png
 
       - name: Run experiments
-        run: |
-          python log_binning/stg_01_run_experiments.py
-          python log_binning/stg_02_newman_powerlaw_grid.py
-          python log_binning/stg_03_note_assets.py
+        run: python log_binning/generate_log_binning_assets.py
 
       - name: Validate outputs
         run: |
@@ -90,9 +85,13 @@ jobs:
           if missing_assets:
               raise SystemExit(f"Missing manuscript assets: {missing_assets}")
 
+          py_files = sorted(p.name for p in root.glob("*.py"))
+          if py_files != ["generate_log_binning_assets.py"]:
+              raise SystemExit(f"Unexpected Python files in log_binning: {py_files}")
+
           print(
               f"Validated {len(df):,} CSV rows, {len(pngs)} root figures, "
-              f"and {len(required_assets)} manuscript assets."
+              f"{len(required_assets)} manuscript assets, and one Python generator."
           )
           PY
 
