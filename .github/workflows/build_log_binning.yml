@@ -1,5 +1,6 @@
 name: Build log binning experiments
 
+# Unified single-script generation pipeline.
 on:
   workflow_dispatch:
   push:
