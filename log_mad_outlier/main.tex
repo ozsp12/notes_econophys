@@ -1,0 +1,743 @@
+%\documentclass[12pt]{elsarticle}
+\documentclass[12pt]{article}
+%\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{dcolumn}
+\usepackage{multirow}
+\usepackage{adjustbox}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{natbib}
+\usepackage[obeyspaces,hyphens]{url}
+\usepackage{lscape}
+\usepackage{nicefrac}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{txfonts}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+%\usepackage{physics}
+%\usepackage{enumitem}
+%\usepackage{cite}
+%\usepackage{subfigure}
+%\usepackage{url}
+\usepackage[
+    unicode=true,
+    pdfencoding=auto,
+    psdextra,
+    plainpages=false,
+    pdfpagelabels,
+    pagebackref=false,
+    hyperindex,
+    breaklinks=true,
+    colorlinks=true,
+    citecolor=black,
+    linkcolor=black,
+    urlcolor=blue,
+    filecolor=black,
+    bookmarksopen=true
+]{hyperref}
+\usepackage[
+    a4paper,
+    left=18mm,
+    right=18mm,
+    top=16mm,
+    bottom=18mm,
+    headheight=15.8pt,
+    headsep=4mm,
+    footskip=8mm,
+    includeheadfoot
+]{geometry}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pdfstringdefDisableCommands{%
+  \def\fnref#1{}%
+  \def\corref#1{}%
+  \def\ead#1{}%
+  \def\textit#1{#1}%
+  \def\emph#1{#1}%
+  \def\textbf#1{#1}%
+  \def\\{ }%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\def\ni{\noindent}
+\newcommand{\bse}{\begin{subequations}}
+\newcommand{\ese}{\end{subequations}}
+\newcommand{\beq}{\begin{eqnarray}}
+\newcommand{\eeq}{\end{eqnarray}}
+\newcommand{\lb}[1]{\label{#1}}
+\newcommand{\up}[1]{\raisebox{0.7mm}{$\scriptstyle \, #1 $}}
+\newcommand{\dn}[1]{\raisebox{-0.7mm}{$\scriptstyle #1 $}}
+\newcommand{\upb}[1]{\raisebox{0.5mm}{$\scriptstyle #1 $}}
+\newcommand{\deli}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\sty}{\scriptstyle}
+\newcommand{\ssty}{\scriptscriptstyle}
+\newcommand{\tsty}{\textstyle}
+\newcommand{\apg}{\:^{>}_{\sim}\:}
+\newcommand{\apl}{\:^{<}_{\sim}\:}
+\newcommand{\eg}{{\it e.g.\ }}
+\newcommand{\ie}{{\it i.e.\ }}
+\newcommand{\Px}{\mathcal{P}(x)}
+\newcommand{\e}{{\mathrm{e}}}
+\newcommand{\dd}{{\mathrm{d}}}
+\DeclareMathOperator{\sech}{sech}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\pder}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand{\deri}[2]{\ensuremath\frac{d#1}{d#2}}
+\newcommand{\cqd}{{{\hfill $\rule{2.5mm}{2.5mm}$}}\vspace{1cm}\\}
+\newcommand{\sen}{\mathrm{sen}}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\nt}[4]{\ensuremath{ \int_{#1}^{#2} #3 \, \mbox{d}#4}}
+\newcommand{\raiotres}{\sqrt{x^2 + y^2 + z^2}}
+\newcommand{\coordn}[1]{(#1_1,\dotsc,#1_n)}
+\newcommand{\setn}[1]{(#1_1,\dotsc,#1_n)}
+\newcommand{\prodintn}[2]{#1_1#2_1 + \dotsc + #1_n#2_n}
+\newcommand{\traco}{{\text{Tr}}}
+\newcommand{\diff}{\text{d}}
+\newcommand{\te}{\text{t}}
+\newcommand{\di}{\mbox{d}}
+\newcommand{\x}{{\bf x}}
+\newcommand{\versor}[1]{{\bf #1}}
+\newcommand{\y}{{\bf y}}
+\newcommand{\bfe}{{\bf e}}
+\newcommand{\ve}{{\bf v}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Mathematical and didactic environments
+\newtheorem{exercise}{Exercise}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{proposition}{Proposition}[section]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\numberwithin{equation}{section}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\small\itshape\nouppercase{\leftmark}}
+\fancyfoot[L]{\scriptsize Osvaldo L. Santos-Pereira --- \href{mailto:olsp@if.ufrj.br}{olsp@if.ufrj.br}}
+\fancyfoot[C]{\scriptsize \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstset{
+  language=Python,
+  basicstyle=\fontsize{10}{12}\selectfont\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!60!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  captionpos=b,
+  escapeinside={(*@}{@*)}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{ragged2e}
+
+\urlstyle{same}
+
+\newcommand{\coverauthor}[4]{%
+{\large\bfseries #1\par}
+\vspace{0.02cm}
+{\normalsize\href{mailto:#2}{#2}\par}
+\vspace{0.02cm}
+{\normalsize\color{blue}\url{#3}\par}
+\vspace{0.02cm}
+{\normalsize\itshape #4\par}
+\vspace{0.8cm}
+}
+
+\long\def\coveraboutme#1{%
+\vspace{0.3cm}
+\begingroup
+{\large\bfseries\color{black} About Me\par}
+\vspace{0.18cm}
+\small
+\color{black!85}
+\justifying
+\setlength{\parindent}{18pt}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}
+#1
+\par
+\endgroup
+\vspace{0.5cm}
+}
+
+\newcommand{\profilesection}[1]{%
+\vspace{0.25cm}
+\noindent{\small\color{black!75} #1\par}
+\vspace{0.15cm}
+}
+
+\newcommand{\sociallink}[2]{%
+\noindent{\footnotesize\color{black!80} #1: \url{#2}\par}
+}
+
+\newcommand{\chaptercover}[4]{%
+\begin{titlepage}
+\thispagestyle{empty}
+\raggedright
+\setlength{\parindent}{0pt}
+\vspace*{0.2cm}
+{\fontsize{34}{40}\selectfont\bfseries #1\par}
+\vspace{1.0cm}
+{\fontsize{26}{30}\selectfont\bfseries #2\par}
+\vspace{1.5cm}
+\rule{\textwidth}{2.0pt}
+\vspace{1.0cm}
+#3
+\vspace{0.3cm}
+#4
+\vfill
+\end{titlepage}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\chaptercover
+{Robust Screening of Heavy-Tailed Income Data}
+{Logarithmic Compression, Median Absolute Deviation, and PNAD Examples}
+{
+\coverauthor
+{Osvaldo L. Santos-Pereira}
+{olsp@if.ufrj.br}
+{https://ozsp12.github.io/}
+{Physics Institute of Federal University of Rio de Janeiro (UFRJ)}
+}
+{
+\coveraboutme{
+\noindent
+I hold a PhD in Physics from the Federal University of Rio de Janeiro (UFRJ), a Master's degree in Physics from the State University of Campinas (Unicamp), a Master's degree in Data Science and Analytics from the University of S\~ao Paulo (MBA USP-ESALQ), a postgraduate degree in Quantum Computing from SENAI-CIMATEC, and a Bachelor's degree in Physics from Unicamp.
+
+\noindent
+I am currently a Fellow Researcher at the Physics Institute of the Federal University of Rio de Janeiro (UFRJ), where I research Warp Drive Theory, Classical General Relativity, Cosmology, Econophysics, and Computational Physics. Other research interests are Wormhole Theory, Black Hole Theory, Quantum Gravity, Quantum Computing and Information, Mathematics, and Artificial Intelligence.
+
+\noindent
+I work in the private sector as a data science consultant and an artificial intelligence specialist. I conduct research projects across several industries, including education, health, medical, e-commerce, and large retail.
+
+\vspace{0.3cm}
+\sociallink{Curr\'iculo Lattes}{http://lattes.cnpq.br/6730251976463283}
+\sociallink{ResearchGate}{https://www.researchgate.net/profile/Osvaldo-Santos-Pereira}
+\sociallink{ORCID}{https://orcid.org/0000-0003-2231-517X}
+\sociallink{Google Scholar}{https://scholar.google.com/citations?user=HIZp0X8AAAAJ&hl=en}
+\sociallink{LinkedIn}{https://www.linkedin.com/in/ozsp12}
+\sociallink{Substack}{https://substack.com/@olsp1982}
+\sociallink{GitHub}{https://github.com/ozsp12}
+\sociallink{YouTube}{https://www.youtube.com/@ozlsp12}
+\sociallink{TikTok}{https://www.tiktok.com/@ozsp12}
+\sociallink{Patreon}{https://www.patreon.com/ozsp12}
+\sociallink{X (Twitter)}{https://x.com/ozsp12}
+}
+}
+
+% \tableofcontents
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+Income data provide a canonical example of a statistical problem in which large observations are simultaneously informative and potentially problematic. Empirical income distributions are strongly asymmetric and frequently exhibit an extended upper tail, a feature that has been studied extensively in econophysics and statistical descriptions of economic systems \cite{yakovenko2009}. An observation far above the sample median may therefore represent a genuine high-income household, a coding convention, a sentinel value, a unit-conversion problem, or an ingestion error. A cleaning rule that treats every extreme observation as an error can destroy precisely the part of the distribution responsible for concentration measures, Pareto-tail estimates, and much of the difference between the mean and the median.
+
+This problem motivates a separation between structural validation and statistical screening. Structural validation concerns statements that can be made without estimating a distribution: numerical finiteness, admissible sign, known missing-value codes, valid denominators, and consistency with the survey schema. Statistical screening begins only after those conditions have been enforced. The distinction is closely related to the general motivation of robust statistics, where estimators are designed to retain useful behavior under departures from an idealized model and under limited contamination \cite{huber2009}. In that language, the relevant question is not whether an observation is numerically large, but how strongly a small subset of observations can control estimates of location, scale, and subsequent decision rules. Influence-based formulations make this sensitivity explicit \cite{hampel1974}.
+
+This note develops a self-contained mathematical treatment of a robust upper-tail screening procedure for non-negative, heavy-tailed income data. The method combines deterministic data layers, logarithmic compression, the sample median, the median absolute deviation, a Gaussian-consistency scaling, and an optional empirical-quantile cap. Brazilian PNAD and PNAD Cont\'inua income records are used as concrete examples, but the construction is presented independently of that particular dataset. Section~2 formalizes the data-layer architecture and structural admissibility. Section~3 explains why classical mean--standard-deviation screening is unstable and introduces a dimensionally consistent logarithmic map. Section~4 derives the scaled median absolute deviation and the factor $1.4826$. Section~5 constructs the generic upper cutoff and studies its scale behavior and degenerate cases. Section~6 introduces an optional quantile-capped rule. Section~7 applies the construction to selected PNAD years. Section~8 discusses mean normalization for cross-distribution comparison, and Sec.~9 summarizes the methodological interpretation and limitations.
+
+\section{Data layers and problem formulation}
+
+A reproducible treatment of survey microdata should preserve the distinction between source preservation, deterministic extraction, statistical quality control, and cross-sample assembly. This separation makes every transformation attributable to a specific stage and prevents later analytical choices from being confused with source reconstruction.
+
+\subsection{Four deterministic layers}
+
+For survey year $y$, denote the source records by $\mathcal{D}^{(y)}_{\mathrm{raw}}$. A general processing architecture may be represented by
+\be
+\mathcal{D}^{(y)}_{\mathrm{raw}}
+\xrightarrow{\;\mathcal{E}_y\;}
+\mathcal{D}^{(y)}_{\mathrm{refined}}
+\xrightarrow{\;\mathcal{Q}_y\;}
+\mathcal{D}^{(y)}_{\mathrm{trusted}},
+\label{eq:layers-year}
+\ee
+where $\mathcal{E}_y$ denotes the year-specific extraction and deterministic structural transformations, while $\mathcal{Q}_y$ denotes the quality-control map. Once every annual partition has been validated, the consolidated dataset is
+\be
+\mathcal{D}_{\mathrm{consolidated}}
+=
+\bigcup_{y\in\mathcal{Y}}
+\mathcal{D}^{(y)}_{\mathrm{trusted}},
+\label{eq:consolidated}
+\ee
+with $\mathcal{Y}$ the set of available survey years. The union in Eq.~\eqref{eq:consolidated} represents concatenation under a common schema rather than a statistical transformation. The original raw layer is never overwritten, the refined layer remains available as a pre-screening baseline, and the trusted layer is an explicitly reproducible analytical choice.
+
+\subsection{Structural admissibility}
+
+Suppose that the refined income values for one year are $x_1,\ldots,x_n$. Let $\mathcal{S}$ denote the set of known sentinel or administrative codes. The structurally admissible sample is
+\be
+\mathcal{A}
+=
+\left\{
+ x_i:
+ x_i\in\R,
+\; x_i\geq 0,
+\; x_i\notin\mathcal{S},
+\; x_i\text{ is finite}
+\right\}.
+\label{eq:admissible-set}
+\ee
+The distinction between $x_i=0$ and a missing-value sentinel is essential. A zero income can be a substantive observation and should not be removed merely because the distribution is analyzed on a logarithmic scale. Known sentinels, negative values, infinities, and undefined values are structurally invalid and should be eliminated before any location or dispersion estimate is calculated. Otherwise those codes participate in the very distributional quantities later used to classify them.
+
+\section{Why robust screening is needed}
+
+Heavy right tails expose the weakness of screening rules based on the arithmetic mean and standard deviation. The problem is not that these classical estimators are incorrect; it is that their sensitivity to a small number of large observations is poorly matched to a task in which the observations under inspection are precisely those in the upper tail.
+
+\subsection{Sensitivity of the mean and variance}
+
+Let $x_1,\ldots,x_n$ have mean $\bar{x}$, and append one observation $M$. The new mean is
+\be
+\bar{x}_{M}
+=
+\frac{n\bar{x}+M}{n+1}.
+\label{eq:contaminated-mean}
+\ee
+As $M\rightarrow\infty$,
+\be
+\bar{x}_{M}
+\sim
+\frac{M}{n+1},
+\label{eq:mean-divergence}
+\ee
+so a single arbitrarily large value can move the mean without bound. The corresponding sample variance contains squared deviations and therefore grows as $O(M^2)$. A rule of the form $\bar{x}+k\hat{\sigma}$ consequently estimates its own threshold using statistics that are themselves dominated by sufficiently large upper-tail observations.
+
+The median and the median absolute deviation have substantially stronger resistance to such contamination. In particular, the MAD has a bounded influence function and a $50\%$ breakdown point under the standard univariate formulation \cite{rousseeuw1993}. This is the reason for using median-based location and scale in the screening stage. Practical comparisons between mean--standard-deviation rules and median--absolute-deviation rules reach the same qualitative conclusion \cite{leys2013}.
+
+\subsection{Logarithmic compression}
+
+For non-negative income it is convenient to introduce a positive reference scale $\lambda$ with the same physical units as $x$ and define
+\be
+T_{\lambda}(x)
+=
+\ln\left(1+\frac{x}{\lambda}\right),
+\qquad x\geq 0,
+\quad \lambda>0.
+\label{eq:log-map}
+\ee
+The transformed observations are
+\be
+z_i=T_{\lambda}(x_i).
+\label{eq:z-transform}
+\ee
+The derivatives are
+\be
+T_{\lambda}'(x)
+=
+\frac{1}{\lambda+x}>0,
+\qquad
+T_{\lambda}''(x)
+=
+-\frac{1}{(\lambda+x)^2}<0.
+\label{eq:log-derivatives}
+\ee
+Hence the transformation is strictly increasing and concave. Strict monotonicity preserves the complete rank ordering, while concavity produces progressively stronger compression as income increases.
+
+\begin{proposition}[Rank preservation]
+For $x_i,x_j\geq0$ and $\lambda>0$,
+\be
+x_i<x_j
+\quad\Longleftrightarrow\quad
+T_{\lambda}(x_i)<T_{\lambda}(x_j).
+\label{eq:rank-preservation}
+\ee
+\end{proposition}
+
+\begin{proof}
+Equation~\eqref{eq:log-derivatives} gives $T'_{\lambda}(x)>0$ over the complete admissible domain. Therefore $T_{\lambda}$ is strictly increasing and preserves order.
+\end{proof}
+
+The reference scale also resolves the dimensional ambiguity of writing the logarithm of a dimensional quantity. The commonly used transformation $\ln(1+x)$ is recovered numerically by choosing $\lambda=1$ in the stored income unit. The PNAD implementation discussed below corresponds to this convention.
+
+\section{Robust location and scale in log-income space}
+
+After structural validation and logarithmic compression, the screening problem becomes a robust location--scale problem for the transformed observations. No Gaussian distribution is assumed for the data; Gaussianity enters only as a reference convention for scaling the MAD.
+
+\subsection{Median and median absolute deviation}
+
+For transformed values $z_1,\ldots,z_n$, define the robust center
+\be
+m
+=
+\operatorname{median}(z_i),
+\label{eq:median}
+\ee
+and the raw median absolute deviation
+\be
+\mathrm{MAD}_{z}
+=
+\operatorname{median}\left|z_i-m\right|.
+\label{eq:mad-raw}
+\ee
+The scaled robust dispersion is
+\be
+s
+=
+c_{\mathrm{N}}\,\mathrm{MAD}_{z},
+\label{eq:mad-scaled}
+\ee
+where $c_{\mathrm{N}}$ is selected so that $s$ is on the standard-deviation scale under a Gaussian reference model.
+
+\subsection{Derivation of the factor $1.4826$}
+
+Let $Z\sim N(0,1)$ and let $\Phi$ denote its cumulative distribution function. If $q$ is the median of $|Z|$, then
+\be
+\Pr\left(|Z|\leq q\right)
+=\frac{1}{2}.
+\label{eq:abs-normal-median}
+\ee
+By symmetry,
+\be
+\Pr\left(|Z|\leq q\right)
+=
+\Phi(q)-\Phi(-q)
+=
+2\Phi(q)-1.
+\label{eq:normal-symmetry}
+\ee
+Combining Eqs.~\eqref{eq:abs-normal-median} and \eqref{eq:normal-symmetry} yields
+\be
+2\Phi(q)-1
+=
+\frac{1}{2},
+\ee
+and therefore
+\be
+q
+=
+\Phi^{-1}\left(\frac{3}{4}\right)
+\simeq
+0.67448975.
+\label{eq:qnormal}
+\ee
+For $X=\mu+\sigma Z$,
+\be
+\operatorname{median}|X-\mu|
+=
+\sigma\Phi^{-1}\left(\frac{3}{4}\right).
+\label{eq:normal-mad}
+\ee
+Thus the normal-consistency constant is
+\be
+c_{\mathrm{N}}
+=
+\frac{1}{\Phi^{-1}(3/4)}
+\simeq
+1.48260222,
+\label{eq:normal-consistency}
+\ee
+and Eq.~\eqref{eq:mad-scaled} becomes
+\be
+s
+\simeq
+1.4826\,
+\operatorname{median}|z_i-m|.
+\label{eq:scaled-mad-final}
+\ee
+The factor in Eq.~\eqref{eq:normal-consistency} does not assert that the transformed income distribution is normal. It merely calibrates the robust scale so that, under a normal reference distribution, its numerical scale agrees with $\sigma$. This convention is standard in robust estimation \cite{rousseeuw1993}.
+
+\section{The robust upper-tail cutoff}
+
+The robust center and scale define a family of deterministic upper-tail rules indexed by a positive multiplier $k$. The procedure is most transparent in transformed space, after which the threshold is mapped back to the original income units.
+
+\subsection{Generic $k$-MAD rule}
+
+Define the transformed cutoff
+\be
+z_c
+=
+m+ks,
+\qquad k>0.
+\label{eq:zc}
+\ee
+Since the inverse of Eq.~\eqref{eq:log-map} is
+\be
+T_{\lambda}^{-1}(z)
+=
+\lambda\left(\e^z-1\right),
+\label{eq:inverse-log-map}
+\ee
+the income cutoff is
+\be
+x_c^{\mathrm{MAD}}
+=
+\lambda\left[\exp(m+ks)-1\right].
+\label{eq:mad-cutoff-general}
+\ee
+The trusted sample associated with this rule is therefore
+\be
+\mathcal{T}
+=
+\left\{x_i\in\mathcal{A}:x_i\leq x_c^{\mathrm{MAD}}\right\}.
+\label{eq:trusted-generic}
+\ee
+For the PNAD application, $\lambda=1$ in the stored annual income unit and $k=6$, giving
+\be
+x_c^{\mathrm{MAD}}
+=
+\exp(m+6s)-1.
+\label{eq:pnad-cutoff}
+\ee
+This construction is reasonably described as robust sigma clipping in log-income space, provided that ``sigma'' is understood as the Gaussian-consistent robust scale $s$. The number $k=6$ is a conservative tuning parameter, not a Gaussian significance test. Unless the transformed distribution is actually Gaussian, the normal tail probability beyond six standard deviations has no direct inferential interpretation for the observed income sample.
+
+Because medians are equivariant under strictly increasing transformations, if $\widetilde{x}$ denotes the sample median in the original income scale, then
+\be
+m
+=
+\ln\left(1+\frac{\widetilde{x}}{\lambda}\right).
+\label{eq:median-equivariance}
+\ee
+Substitution into Eq.~\eqref{eq:mad-cutoff-general} gives the useful multiplicative form
+\be
+x_c^{\mathrm{MAD}}+\lambda
+=
+(\widetilde{x}+\lambda)\exp(ks).
+\label{eq:multiplicative-cutoff}
+\ee
+Thus the upper threshold is multiplicative relative to the robust central income once expressed in the shifted positive scale $x+\lambda$.
+
+\subsection{Units and scale equivariance}
+
+Suppose that the income unit is changed by a positive factor $a$, so that
+\be
+x_i'=a x_i.
+\label{eq:unit-rescale}
+\ee
+If the reference scale is transformed consistently, $\lambda'=a\lambda$, then
+\be
+\ln\left(1+\frac{x_i'}{\lambda'}\right)
+=
+\ln\left(1+\frac{x_i}{\lambda}\right)
+=z_i.
+\label{eq:transform-unit-invariance}
+\ee
+Consequently $m'=m$, $s'=s$, and
+\be
+x_c'
+=
+\lambda'\left[\exp(m+ks)-1\right]
+=
+a x_c.
+\label{eq:cutoff-equivariance}
+\ee
+The generalized transformation in Eq.~\eqref{eq:log-map} is therefore exactly scale-equivariant when $\lambda$ is treated as a dimensional reference scale. By contrast, fixing the numerical value $\lambda=1$ after changing the monetary unit is not exactly invariant because $\ln(1+ax)\neq \ln a+\ln(1+x)$ in general. A reproducible implementation must therefore specify the stored unit in which the numerical $\lambda=1$ convention is applied.
+
+\subsection{Degenerate dispersion}
+
+A MAD equal to zero can occur when at least half of the transformed observations coincide sufficiently strongly around the sample median. In that case Eq.~\eqref{eq:mad-cutoff-general} would collapse to a cutoff determined only by $m$. A deterministic fallback may be defined by
+\be
+s
+=
+\begin{cases}
+1.4826\,\mathrm{MAD}_{z}, & \mathrm{MAD}_{z}>0,\\[1mm]
+\operatorname{sd}(z), & \mathrm{MAD}_{z}=0\text{ and }\operatorname{sd}(z)>0,\\[1mm]
+0, & \operatorname{sd}(z)=0.
+\end{cases}
+\label{eq:fallback-scale}
+\ee
+If the final dispersion is zero, all transformed observations are identical and the natural non-destructive cutoff is
+\be
+x_c
+=
+\max_i x_i.
+\label{eq:zero-dispersion-cutoff}
+\ee
+The classical standard deviation appears here only as an explicit fallback when the robust scale is unable to resolve any dispersion.
+
+\section{Quantile-capped robust screening}
+
+The generic log-MAD threshold is designed to be conservative. Some datasets may nevertheless contain particular partitions for which a stronger, pre-specified upper-tail treatment is required. A quantile cap provides a simple deterministic extension while keeping the generic robust threshold visible.
+
+\subsection{Empirical quantile cap}
+
+Let the empirical distribution function of the structurally admissible sample be
+\be
+F_n(x)
+=
+\frac{1}{n}
+\sum_{i=1}^{n}
+\mathbf{1}(x_i\leq x),
+\label{eq:empirical-cdf}
+\ee
+and define the empirical $q$-quantile by
+\be
+Q_q
+=
+\inf\left\{x:F_n(x)\geq q\right\}.
+\label{eq:empirical-quantile}
+\ee
+A capped threshold is
+\be
+x_c
+=
+\min\left(x_c^{\mathrm{MAD}},Q_q\right).
+\label{eq:quantile-cap}
+\ee
+For $q=0.99$,
+\be
+x_c
+=
+\min\left(x_c^{\mathrm{MAD}},Q_{0.99}\right).
+\label{eq:p99-cap}
+\ee
+Whenever $Q_{0.99}<x_c^{\mathrm{MAD}}$, the quantile rather than the robust log-MAD rule determines the effective cutoff. The fraction removed is then approximately one percent, with the exact value depending on ties and on the finite-sample quantile convention.
+
+\subsection{Interpretation and sensitivity}
+
+Equation~\eqref{eq:p99-cap} is substantially stronger than the generic rule and should be treated as an explicit modeling decision. It can remove genuine observations from the economically relevant upper tail, which means that analyses of Pareto exponents, top-income shares, or extreme concentration should be repeated on the pre-treatment refined layer whenever the tail itself is the scientific target. The methodological advantage of retaining both refined and trusted datasets is precisely that the quantile cap remains reversible at the analytical level: alternative thresholds can be evaluated without reconstructing the source extraction.
+
+\section{PNAD example}
+
+The Brazilian PNAD and PNAD Cont\'inua records provide a useful empirical example because their annual income distributions are strongly right-skewed, their source layouts change over time, and the historical sequence contains both ordinary years and a small number of explicitly exceptional treatment years. The example below illustrates the mathematics without making the PNAD-specific rule a universal prescription.
+
+\subsection{Data source and annual treatment}
+
+The public PNAD/PNAD Cont\'inua analytical release contains household per-capita income records for 45 survey years between 1976 and 2025, with explicit survey gaps, together with annual extraction and treatment metadata \cite{queiroz2026pnad}. The processing code and versioned metadata are maintained in the associated public repository \cite{projectpnad2026}. In that implementation, structurally invalid values are removed before the annual log-MAD statistics are computed, valid zero income is retained, the numerical transformation is $z_i=\ln(1+x_i)$ in the stored annual income unit, and the generic multiplier is $k=6$.
+
+Most annual partitions require little or no statistical removal under the generic rule. Two years, 1985 and 1990, are treated by the additional cap in Eq.~\eqref{eq:p99-cap}. Table~\ref{tab:pnad-examples} contrasts ordinary and exceptional examples using the audit metadata from the public repository.
+
+\begin{table}[ht]
+\centering
+\caption{Selected annual PNAD treatment results. The removal rate is the fraction of refined observations removed by the complete trusted-layer treatment.}
+\label{tab:pnad-examples}
+\small
+\begin{tabular}{l l r r r r}
+\toprule
+Year & Effective rule & $N_{\mathrm{refined}}$ & $N_{\mathrm{removed}}$ & $N_{\mathrm{trusted}}$ & Removal rate \\
+\midrule
+1979 & log-MAD & 170807 & 0    & 170807 & $0$ \\
+1989 & log-MAD & 292690 & 2    & 292688 & $0.000683\%$ \\
+1985 & $\min$(log-MAD,$Q_{0.99}$) & 514137 & 5142 & 508995 & $1.0001\%$ \\
+1990 & $\min$(log-MAD,$Q_{0.99}$) & 115785 & 1128 & 114657 & $0.9742\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The 1985 and 1990 thresholds}
+
+The exceptional years illustrate how different the generic and capped rules can be. In the 1985 stored income scale, the generic log-MAD threshold is approximately
+\be
+x_{c,1985}^{\mathrm{MAD}}
+\simeq
+1.337692\times 10^8,
+\label{eq:1985-mad-cutoff}
+\ee
+whereas the empirical percentile is
+\be
+Q_{0.99,1985}
+\simeq
+3.945002\times10^6.
+\label{eq:1985-p99}
+\ee
+Therefore the effective threshold is the percentile value. For 1990,
+\be
+x_{c,1990}^{\mathrm{MAD}}
+\simeq
+7.072371\times10^7,
+\label{eq:1990-mad-cutoff}
+\ee
+while
+\be
+Q_{0.99,1990}
+\simeq
+7.500035\times10^5,
+\label{eq:1990-p99}
+\ee
+again making the empirical percentile the active rule. These nominal thresholds are meaningful only within their respective annual stored-income units and should not be compared as real income levels across years. Their role here is to show how Eq.~\eqref{eq:p99-cap} operates algebraically.
+
+The contrast with 1979 and 1989 is also informative. The generic six-scaled-MAD rule removes no observations in 1979 and only two observations in 1989. The exceptional treatment removes approximately one percent in 1985 and 1990. This sharp separation is why the exceptional years should be declared in metadata rather than silently inferred from the final distribution.
+
+\section{Mean normalization after screening}
+
+After data construction, different annual distributions can be compared on a dimensionless scale by normalizing income by the corresponding sample mean. This transformation belongs to the analysis stage rather than to structural cleaning or trusted-layer construction.
+
+\subsection{Unit-mean normalization}
+
+For trusted observations $x_1,\ldots,x_n$ with positive finite mean
+\be
+\bar{x}
+=
+\frac{1}{n}\sum_{i=1}^{n}x_i>0,
+\label{eq:annual-mean}
+\ee
+define
+\be
+y_i
+=
+\frac{x_i}{\bar{x}}.
+\label{eq:mean-normalization}
+\ee
+Then
+\be
+\frac{1}{n}
+\sum_{i=1}^{n}y_i
+=
+\frac{1}{n\bar{x}}
+\sum_{i=1}^{n}x_i
+=
+1.
+\label{eq:normalized-mean}
+\ee
+Thus every normalized annual distribution has unit arithmetic mean.
+
+\begin{proposition}[Scale invariance of mean normalization]
+If $x_i'=a x_i$ for some $a>0$, then the mean-normalized observations are unchanged.
+\end{proposition}
+
+\begin{proof}
+The transformed mean is $\bar{x}'=a\bar{x}$. Hence
+\be
+\frac{x_i'}{\bar{x}'}
+=
+\frac{a x_i}{a\bar{x}}
+=
+\frac{x_i}{\bar{x}}.
+\ee
+\end{proof}
+
+\subsection{Interpretation}
+
+Mean normalization eliminates a common multiplicative monetary scale and is therefore useful for comparing distributional shapes across years. It does not make the original incomes comparable in purchasing-power terms, and it does not remove sensitivity of the mean to the upper tail. For that reason it is logically downstream of the trusted-layer decision: changing the upper-tail treatment can change $\bar{x}$ and consequently rescale every normalized observation in that year.
+
+\section{Discussion and conclusions}
+
+The mathematical construction developed above is simple, but several distinctions are essential for using it correctly. The method should be understood as a reproducible screening specification rather than as a universal definition of an income outlier.
+
+\subsection{Methodological interpretation}
+
+The principal advantage of the procedure is modularity. Structural invalidity is decided without using estimated distributional thresholds. The remaining non-negative observations are mapped to a compressed log-income scale, where median-based location and dispersion are estimated robustly. The Gaussian-consistency factor gives the MAD a familiar scale without imposing Gaussianity. The cutoff $m+ks$ is deterministic once $k$ is fixed, and the inverse transformation maps the decision back to the original income scale. If a stronger quantile cap is required for an exceptional partition, that choice is expressed separately rather than hidden inside the generic rule.
+
+The refined--trusted distinction is equally important. A statistical screening rule necessarily embeds a scientific choice about which portion of the observed upper tail is accepted into the analysis. Preserving the refined sample means that this choice can be challenged, replaced, or subjected to sensitivity analysis without reconstructing the historical source files. For heavy-tailed economic data, this is preferable to treating a single cleaned file as if it were a neutral representation of the source.
+
+\subsection{Limitations and final remarks}
+
+Three limitations should remain explicit. First, the multiplier $k$ is a tuning parameter rather than an inferential probability statement. Second, a quantile cap can suppress genuine upper-tail structure and must therefore be disclosed whenever concentration or tail behavior is a scientific target. Third, the numerical $\ln(1+x)$ convention is tied to the stored measurement unit; the dimensionally explicit form $\ln(1+x/\lambda)$ makes the required scale choice visible and restores exact unit equivariance when $\lambda$ is transformed consistently.
+
+Within those constraints, the log-MAD construction provides a useful compromise between robustness and interpretability. Its complete logic can be summarized as structural validation, monotone tail compression, robust location and scale estimation, deterministic thresholding, explicit exceptional treatment when required, and downstream normalization only after the data product has been defined. The PNAD example shows why this separation matters empirically: the generic rule is nearly non-destructive in ordinary years, while exceptional percentile-capped years remain clearly identifiable and independently auditable.
+
+\bibliography{reference}
+\bibliographystyle{unsrt}
+
+\end{document}
