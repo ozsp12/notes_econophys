@@ -8,6 +8,7 @@ on:
     paths:
       - "log_binning/stg_01_run_experiments.py"
       - "log_binning/stg_02_newman_powerlaw_grid.py"
+      - "log_binning/stg_03_note_assets.py"
       - "requirements.txt"
       - ".github/workflows/build_log_binning.yml"
 
@@ -31,12 +32,16 @@ jobs:
         run: python -m pip install -r requirements.txt
 
       - name: Remove generated figures
-        run: rm -f log_binning/*.png
+        run: |
+          rm -f log_binning/*.png
+          rm -f log_binning/assets/*.png
+          rm -f log_binning/assets/newman_powerlaw/*.png
 
       - name: Run experiments
         run: |
           python log_binning/stg_01_run_experiments.py
           python log_binning/stg_02_newman_powerlaw_grid.py
+          python log_binning/stg_03_note_assets.py
 
       - name: Validate outputs
         run: |
@@ -73,7 +78,22 @@ jobs:
           if pngs != expected_pngs:
               raise SystemExit(f"Unexpected PNG set: {sorted(pngs)}")
 
-          print(f"Validated {len(df):,} CSV rows and {len(pngs)} figures.")
+          required_assets = {
+              root / "assets" / "ccdf_grid_no_title.png",
+              root / "assets" / "newman_powerlaw" / "newman_powerlaw_grid.png",
+              root / "assets" / "newman_powerlaw" / "newman_panel_a.png",
+              root / "assets" / "newman_powerlaw" / "newman_panel_b.png",
+              root / "assets" / "newman_powerlaw" / "newman_panel_c.png",
+              root / "assets" / "newman_powerlaw" / "newman_panel_d.png",
+          }
+          missing_assets = sorted(str(p) for p in required_assets if not p.is_file())
+          if missing_assets:
+              raise SystemExit(f"Missing manuscript assets: {missing_assets}")
+
+          print(
+              f"Validated {len(df):,} CSV rows, {len(pngs)} root figures, "
+              f"and {len(required_assets)} manuscript assets."
+          )
           PY
 
       - name: Commit generated assets
