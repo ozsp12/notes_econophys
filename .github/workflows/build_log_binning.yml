@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - "log_binning/stg_01_run_experiments.py"
+      - "log_binning/stg_02_newman_powerlaw_grid.py"
       - "requirements.txt"
       - ".github/workflows/build_log_binning.yml"
 
@@ -33,7 +34,9 @@ jobs:
         run: rm -f log_binning/*.png
 
       - name: Run experiments
-        run: python log_binning/stg_01_run_experiments.py
+        run: |
+          python log_binning/stg_01_run_experiments.py
+          python log_binning/stg_02_newman_powerlaw_grid.py
 
       - name: Validate outputs
         run: |
@@ -64,6 +67,7 @@ jobs:
               "histograms.png",
               "ccdf_grid.png",
               "bin_means_grid.png",
+              "newman_powerlaw_grid.png",
           }
           pngs = {p.name for p in root.glob("*.png")}
           if pngs != expected_pngs:
