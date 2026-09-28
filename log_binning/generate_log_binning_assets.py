@@ -1,8 +1,7 @@
-"""Generate all numerical outputs and figures for the log-binning lecture notes.
+"""Generate all numerical tables and figures for the log-binning notes.
 
-This module consolidates the former experiment, Newman-grid, and manuscript-asset
-scripts into one reproducible pipeline. It generates the numerical binning table,
-the root figures used throughout the project, and the manuscript-specific assets.
+All generated outputs are stored directly in ``log_binning``. Figure files use
+``figure_`` as a prefix and tabular data files use ``table_`` as a prefix.
 """
 
 from __future__ import annotations
@@ -15,11 +14,13 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parent
-CSV_PATH = ROOT / "binning_experiments.csv"
-ASSET_ROOT = ROOT / "assets"
-CCDF_ASSET_PATH = ASSET_ROOT / "ccdf_grid_no_title.png"
-NEWMAN_FIGURE_PATH = ROOT / "newman_powerlaw_grid.png"
-NEWMAN_ASSET_DIR = ASSET_ROOT / "newman_powerlaw"
+TABLE_PATH = ROOT / "table_binning_experiments.csv"
+
+FIGURE_HISTOGRAMS = ROOT / "figure_histograms.png"
+FIGURE_CCDF = ROOT / "figure_ccdf_grid.png"
+FIGURE_CCDF_NO_TITLE = ROOT / "figure_ccdf_grid_no_title.png"
+FIGURE_BIN_MEANS = ROOT / "figure_bin_means_grid.png"
+FIGURE_NEWMAN_GRID = ROOT / "figure_newman_powerlaw_grid.png"
 
 SEED = 20260925
 NEWMAN_SEED = 20260926
@@ -50,14 +51,12 @@ def generate_distributions(
     n: int = N,
     seed: int = SEED,
 ) -> dict[str, np.ndarray]:
-    """Generate deterministic synthetic samples of the three distributions."""
+    """Generate deterministic exponential, lognormal, and Pareto samples."""
     rng = np.random.default_rng(seed)
     exponential = rng.exponential(scale=EXPONENTIAL_SCALE, size=n)
     lognormal = rng.lognormal(mean=LOGNORMAL_MU, sigma=LOGNORMAL_SIGMA, size=n)
-
     u = rng.random(n)
     pareto = PARETO_XMIN * (1.0 - u) ** (-1.0 / (PARETO_ALPHA_PDF - 1.0))
-
     return {
         "exponential": exponential,
         "lognormal": lognormal,
@@ -123,7 +122,7 @@ def summarize_bins(
     k: int,
     method: str,
 ) -> pd.DataFrame:
-    """Compute one row of local statistics for each of the K bins."""
+    """Compute one row of local statistics for each bin."""
     codes, edges = bin_codes_and_edges(values, k, method)
     frame = pd.DataFrame({"bin_id": codes, "value": values})
     grouped = frame.groupby("bin_id", sort=True, observed=True)["value"]
@@ -210,8 +209,7 @@ def loglog_tail_ols(
 
 
 def make_histogram_grid(samples: dict[str, np.ndarray]) -> Path:
-    """Create the 3x3 histogram grid with a conservatively cropped Pareto tail."""
-    output_path = ROOT / "histograms.png"
+    """Create the 3x3 histogram grid."""
     fig, axes = plt.subplots(3, 3, figsize=(16, 10.5), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
@@ -251,9 +249,9 @@ def make_histogram_grid(samples: dict[str, np.ndarray]) -> Path:
             ax.set_xlabel("Income")
             ax.set_ylabel("Frequency")
 
-    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE_HISTOGRAMS, dpi=200, bbox_inches="tight")
     plt.close(fig)
-    return output_path
+    return FIGURE_HISTOGRAMS
 
 
 def _draw_ccdf_grid(
@@ -262,8 +260,7 @@ def _draw_ccdf_grid(
     output_path: Path,
     include_title: bool,
 ) -> Path:
-    """Draw the common 3x3 CCDF grid, optionally with a figure super-title."""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    """Draw the common 3x3 CCDF grid."""
     fig, axes = plt.subplots(3, 3, figsize=(13, 10), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
@@ -308,27 +305,14 @@ def _draw_ccdf_grid(
     return output_path
 
 
-def make_ccdf_grid(samples: dict[str, np.ndarray]) -> Path:
-    """Create the project CCDF grid with its descriptive super-title."""
-    return _draw_ccdf_grid(
-        samples,
-        output_path=ROOT / "ccdf_grid.png",
-        include_title=True,
-    )
-
-
-def make_ccdf_grid_no_title(samples: dict[str, np.ndarray]) -> Path:
-    """Create the manuscript CCDF asset without an embedded super-title."""
-    return _draw_ccdf_grid(
-        samples,
-        output_path=CCDF_ASSET_PATH,
-        include_title=False,
-    )
+def make_ccdf_figures(samples: dict[str, np.ndarray]) -> None:
+    """Create CCDF figures with and without the embedded super-title."""
+    _draw_ccdf_grid(samples, output_path=FIGURE_CCDF, include_title=True)
+    _draw_ccdf_grid(samples, output_path=FIGURE_CCDF_NO_TITLE, include_title=False)
 
 
 def make_bin_mean_grid(table: pd.DataFrame) -> Path:
     """Create a K-by-distribution grid of mean value versus bin id."""
-    output_path = ROOT / "bin_means_grid.png"
     fig, axes = plt.subplots(3, 3, figsize=(13, 10), constrained_layout=True)
 
     for i, k in enumerate(K_VALUES):
@@ -357,9 +341,9 @@ def make_bin_mean_grid(table: pd.DataFrame) -> Path:
             ax.legend(loc="best", fontsize=8)
 
     fig.suptitle(f"Mean value by bin and method: N={N:,}")
-    fig.savefig(output_path, dpi=180)
+    fig.savefig(FIGURE_BIN_MEANS, dpi=180)
     plt.close(fig)
-    return output_path
+    return FIGURE_BIN_MEANS
 
 
 def generate_pareto_sample(
@@ -384,9 +368,8 @@ def _prepare_newman_panel_data(
     alpha: float,
     xmin: float,
 ) -> dict[str, np.ndarray]:
-    """Prepare all numerical arrays used by the four Newman-style panels."""
+    """Prepare arrays used by the four Newman-style panels."""
     n = len(values)
-
     x_linear_max = 8.0 * xmin
     x_pdf = np.linspace(xmin, x_linear_max, 800)
     normalization = (alpha - 1.0) * xmin ** (alpha - 1.0)
@@ -488,18 +471,14 @@ NEWMAN_PANEL_DRAWERS = (
 )
 
 
-def _save_newman_panels(
-    data: dict[str, np.ndarray],
-    asset_dir: Path,
-) -> None:
-    """Save the four component Newman-style panels as separate assets."""
-    asset_dir.mkdir(parents=True, exist_ok=True)
+def _save_newman_panels(data: dict[str, np.ndarray]) -> None:
+    """Save the four Newman-style component panels in the project root folder."""
     for label, drawer in zip("abcd", NEWMAN_PANEL_DRAWERS):
         fig, ax = plt.subplots(figsize=(5.1, 4.0))
         drawer(ax, data)
         fig.tight_layout()
         fig.savefig(
-            asset_dir / f"newman_panel_{label}.png",
+            ROOT / f"figure_newman_panel_{label}.png",
             dpi=200,
             bbox_inches="tight",
         )
@@ -511,11 +490,9 @@ def make_newman_powerlaw_grid(
     *,
     alpha: float = NEWMAN_ALPHA,
     xmin: float = NEWMAN_XMIN,
-    output_path: str | Path = NEWMAN_FIGURE_PATH,
-    asset_dir: str | Path = NEWMAN_ASSET_DIR,
     show: bool = False,
 ) -> Path:
-    """Create the Newman-style 2x2 power-law diagnostic grid and panel assets."""
+    """Create the Newman-style 2x2 power-law grid and its four component panels."""
     if values is None:
         values = generate_pareto_sample(alpha=alpha, xmin=xmin)
     else:
@@ -525,11 +502,7 @@ def make_newman_powerlaw_grid(
         if not np.all(np.isfinite(values)) or np.any(values <= 0.0):
             raise ValueError("values must contain only finite positive numbers.")
 
-    output_path = Path(output_path)
-    asset_dir = Path(asset_dir)
-    asset_dir.mkdir(parents=True, exist_ok=True)
     data = _prepare_newman_panel_data(values, alpha, xmin)
-
     fig, axes = plt.subplots(2, 2, figsize=(10.8, 7.6))
     for ax, drawer in zip(axes.ravel(), NEWMAN_PANEL_DRAWERS):
         drawer(ax, data)
@@ -542,25 +515,18 @@ def make_newman_powerlaw_grid(
         wspace=0.36,
         hspace=0.34,
     )
-
-    fig.savefig(output_path, dpi=200, bbox_inches="tight")
-    fig.savefig(
-        asset_dir / "newman_powerlaw_grid.png",
-        dpi=200,
-        bbox_inches="tight",
-    )
-    _save_newman_panels(data, asset_dir)
+    fig.savefig(FIGURE_NEWMAN_GRID, dpi=200, bbox_inches="tight")
+    _save_newman_panels(data)
 
     if show:
         plt.show()
     plt.close(fig)
-    return output_path
+    return FIGURE_NEWMAN_GRID
 
 
 def main() -> None:
-    """Generate every numerical table and figure asset in one reproducible run."""
+    """Generate the table and every figure in one reproducible run."""
     samples = generate_distributions()
-
     tables = [
         summarize_bins(samples[distribution], distribution, k, method)
         for distribution in DISTRIBUTIONS
@@ -568,7 +534,7 @@ def main() -> None:
         for method in METHODS
     ]
     table = pd.concat(tables, ignore_index=True)
-    table.to_csv(CSV_PATH, index=False, float_format="%.12g")
+    table.to_csv(TABLE_PATH, index=False, float_format="%.12g")
 
     expected_rows = len(DISTRIBUTIONS) * len(METHODS) * sum(K_VALUES)
     if len(table) != expected_rows:
@@ -576,13 +542,12 @@ def main() -> None:
 
     histogram_samples = generate_distributions(n=HISTOGRAM_N)
     make_histogram_grid(histogram_samples)
-    make_ccdf_grid(samples)
+    make_ccdf_figures(samples)
     make_bin_mean_grid(table)
     make_newman_powerlaw_grid()
-    make_ccdf_grid_no_title(samples)
 
-    print(f"Saved {len(table):,} bin rows to {CSV_PATH.name}")
-    print("Generated all root figures and manuscript assets")
+    print(f"Saved {len(table):,} bin rows to {TABLE_PATH.name}")
+    print("Generated all figure_*.png outputs in log_binning")
 
 
 if __name__ == "__main__":
