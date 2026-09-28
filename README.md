@@ -1,38 +1,29 @@
-# notes_econophys
+# Econophysics Notes
 
-Lecture notes and reproducible computational material for econophysics.
+This repository is my personal collection of lecture notes, derivations, methodological studies, and reproducible computational material related to my research in **econophysics**. The notes are intended to develop theoretical ideas, statistical and mathematical methods, numerical experiments, and their implementation in Python in a form suitable for study, teaching, and further research.
 
-## Data structure
+The repository is not organized as a conventional textbook. Each topic is developed as an independent and largely self-contained note, typically combining analytical discussion, methodological formulation, computational examples, figures, tables, and reproducible code. The emphasis is on mathematical clarity, explicit assumptions, statistical interpretation, and reproducibility.
 
-- `data/metadata/pnad_gompertz_pareto.csv`: annual Gompertz--Pareto parameters for 1976--2025. Years without PNAD are filled by the arithmetic mean of the immediately previous and following years.
-- `data/metadata/statistics_annual.csv`: trusted annual PNAD descriptive and inequality statistics copied from `project_pnad`.
-- `data/metadata/monetary_metadata.csv`: Brazilian currency, exchange-rate and U.S. CPI metadata.
-- `data/synthetic/`: generated synthetic datasets.
-
-## Synthetic PNAD reconstruction
-
-`src/stg_01_synthetic_gompertz_pareto.py` reconstructs deterministic annual income quantiles from the Gompertz--Pareto model and calibrates each synthetic year to the trusted annual observation count, mean and standard deviation.
-
-For years without PNAD (1980, 1991, 1994, 2000 and 2010), the statistical metadata are generated in memory by the arithmetic mean of years `y-1` and `y+1`, using the same rule adopted for the Gompertz--Pareto parameters.
-
-Run:
-
-```bash
-pip install -r requirements.txt
-python src/stg_01_synthetic_gompertz_pareto.py
-```
-
-Output:
+## Repository Organization
 
 ```text
-data/synthetic/pnad_gompertz_pareto.parquet
+notes_econophys/
+├── log_binning/        # Logarithmic binning and heavy-tailed distributions
+├── log_mad_outlier/    # MAD-based robust outlier analysis
+├── data/               # Supporting datasets and metadata
+├── src/                # Shared or auxiliary Python code
+├── templates/          # LaTeX and document templates
+└── requirements.txt    # Python dependencies
 ```
 
-The Parquet schema is exactly:
+Topic directories are intended to contain the complete material associated with each note, including theoretical development, methodology, Python implementations, numerical outputs, figures, tables, and references. More detailed documentation is maintained locally within each topic when necessary.
 
-```text
-year
-income
-```
+## Reproducibility
 
-`income` is expressed in constant 2025 U.S. dollars. The generated observations reproduce fitted distributions and annual statistical constraints; they are not recovered PNAD microdata.
+Computational examples are written primarily in Python and are designed to reproduce the numerical results and graphical material used in the notes. Shared dependencies are listed in `requirements.txt`, while topic-specific scripts and generated outputs remain close to the corresponding lecture note whenever possible.
+
+## About Me
+
+I am **Osvaldo L. Santos-Pereira**, a physicist, researcher, data scientist, and writer affiliated with the **Institute of Physics of Universidade Federal do Rio de Janeiro (UFRJ)**. My interests include pure and applied mathematics, gravitation and general relativity, mathematical and computational physics, quantum computing, statistical methods, data science, and artificial intelligence. My work is centered on connecting analytical reasoning, mathematical structure, numerical computation, and scientific communication.
+
+**Osvaldo L. Santos-Pereira** — [Academic webpage](https://ozsp12.github.io/) · [Lattes](http://lattes.cnpq.br/6730251976463283) · [ORCID](https://orcid.org/0000-0003-2231-517X) · [Google Scholar](https://scholar.google.com/citations?user=HIZp0X8AAAAJ&hl=en) · [ResearchGate](https://www.researchgate.net/profile/Osvaldo-Santos-Pereira) · [GitHub](https://github.com/ozsp12) · [LinkedIn](https://www.linkedin.com/in/ozsp12) · [Substack](https://substack.com/@olsp1982) · [Medium](https://medium.com/@ozsp12) · [YouTube](https://www.youtube.com/@ozlsp12) · [X](https://x.com/ozsp12)
