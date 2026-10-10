@@ -26,16 +26,15 @@ Computational examples are written primarily in Python and are designed to repro
 
 I am **Osvaldo L. Santos-Pereira**, a physicist, researcher, data scientist, and writer affiliated with the **Institute of Physics of Universidade Federal do Rio de Janeiro (UFRJ)**. My interests include pure and applied mathematics, gravitation and general relativity, mathematical and computational physics, quantum computing, statistical methods, data science, and artificial intelligence. My work is centered on connecting analytical reasoning, mathematical structure, numerical computation, and scientific communication.
 
-<p align="left">
-  <a href="https://ozsp12.github.io/"><img src="https://img.shields.io/badge/Academic_Webpage-1F6FEB?style=flat-square&logo=googlechrome&logoColor=white" alt="Academic webpage"></a>
-  <a href="http://lattes.cnpq.br/6730251976463283"><img src="https://img.shields.io/badge/Lattes-005CA9?style=flat-square" alt="Lattes"></a>
-  <a href="https://orcid.org/0000-0003-2231-517X"><img src="https://img.shields.io/badge/ORCID-A6CE39?style=flat-square&logo=orcid&logoColor=white" alt="ORCID"></a>
-  <a href="https://scholar.google.com/citations?user=HIZp0X8AAAAJ&hl=en"><img src="https://img.shields.io/badge/Google_Scholar-4285F4?style=flat-square&logo=googlescholar&logoColor=white" alt="Google Scholar"></a>
-  <a href="https://www.researchgate.net/profile/Osvaldo-Santos-Pereira"><img src="https://img.shields.io/badge/ResearchGate-00CCBB?style=flat-square&logo=researchgate&logoColor=white" alt="ResearchGate"></a>
-  <a href="https://github.com/ozsp12"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"></a>
-  <a href="https://www.linkedin.com/in/ozsp12"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
-  <a href="https://substack.com/@olsp1982"><img src="https://img.shields.io/badge/Substack-FF6719?style=flat-square&logo=substack&logoColor=white" alt="Substack"></a>
-  <a href="https://medium.com/@ozsp12"><img src="https://img.shields.io/badge/Medium-000000?style=flat-square&logo=medium&logoColor=white" alt="Medium"></a>
-  <a href="https://www.youtube.com/@ozlsp12"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://x.com/ozsp12"><img src="https://img.shields.io/badge/X-000000?style=flat-square&logo=x&logoColor=white" alt="X"></a>
-</p>
+<a href="mailto:olsp@if.ufrj.br">✉️ Email</a><br>
+<a href="https://ozsp12.github.io/">🌐 Academic webpage</a><br>
+<a href="http://lattes.cnpq.br/6730251976463283">🎓 Lattes</a><br>
+<a href="https://orcid.org/0000-0003-2231-517X"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/orcid.svg" width="24" align="center" alt="ORCID"> ORCID</a><br>
+<a href="https://scholar.google.com/citations?user=HIZp0X8AAAAJ&hl=en"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/googlescholar.svg" width="24" align="center" alt="Google Scholar"> Google Scholar</a><br>
+<a href="https://www.researchgate.net/profile/Osvaldo-Santos-Pereira"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/researchgate.svg" width="24" align="center" alt="ResearchGate"> ResearchGate</a><br>
+<a href="https://github.com/ozsp12"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/github.svg" width="24" align="center" alt="GitHub"> GitHub</a><br>
+<a href="https://www.linkedin.com/in/ozsp12"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-original.svg" width="24" align="center" alt="LinkedIn"> LinkedIn</a><br>
+<a href="https://substack.com/@olsp1982"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/substack.svg" width="24" align="center" alt="Substack"> Substack</a><br>
+<a href="https://medium.com/@ozsp12"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/medium.svg" width="24" align="center" alt="Medium"> Medium</a><br>
+<a href="https://www.youtube.com/@ozlsp12"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg" width="24" align="center" alt="YouTube"> YouTube</a><br>
+<a href="https://x.com/ozsp12"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg" width="24" align="center" alt="X"> X</a>
