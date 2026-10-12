@@ -16,7 +16,7 @@ notes_econophys/
 └── requirements.txt    # Python dependencies
 ```
 
-Topic directories are intended to contain the complete material associated with each note, including theoretical development, methodology, Python implementations, numerical outputs, figures, tables, and references. More detailed documentation is maintained locally within each topic when necessary.
+Topic directories contain the complete material for each note, including theoretical development, methodology, Python implementations, numerical outputs, figures, tables, and references. More detailed documentation is maintained locally within each topic when necessary.
 
 ## Reproducibility
 
